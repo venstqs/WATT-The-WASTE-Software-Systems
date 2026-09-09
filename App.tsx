@@ -1,5 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Platform, Dimensions, useWindowDimensions } from 'react-native';
+import React from 'react';
+import {
+  StyleSheet,
+  View,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -21,22 +26,34 @@ const CustomLightTheme = {
 
 export default function App() {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const isDesktopWeb = Platform.OS === 'web' && windowWidth > 520;
+  const isDesktopWeb = Platform.OS === 'web' && windowWidth > 540;
+
+  // Calculate phone frame height responsive to viewport
+  const phoneHeight = Math.min(840, Math.max(680, windowHeight - 40));
+  const phoneWidth = Math.min(400, Math.round(phoneHeight * 0.48));
 
   return (
     <SafeAreaProvider>
       <View style={isDesktopWeb ? styles.desktopBackdrop : styles.mobileRoot}>
         <StatusBar style="dark" />
         {isDesktopWeb ? (
-          <View style={styles.phoneFrameContainer}>
-            {/* Phone Bezel Header / Dynamic Island */}
-            <View style={styles.phoneBezel}>
+          <View style={styles.phoneShadowWrapper}>
+            <View
+              style={[
+                styles.phoneBezel,
+                { width: phoneWidth, height: phoneHeight },
+              ]}
+            >
+              {/* Dynamic Island / Notch */}
               <View style={styles.dynamicIsland} />
+              
+              {/* Screen Container */}
               <View style={styles.screenInner}>
                 <NavigationContainer theme={CustomLightTheme}>
                   <AppNavigator />
                 </NavigationContainer>
               </View>
+
               {/* Home Indicator Bar */}
               <View style={styles.homeBarContainer}>
                 <View style={styles.homeBar} />
@@ -58,54 +75,54 @@ export default function App() {
 const styles = StyleSheet.create({
   desktopBackdrop: {
     flex: 1,
-    backgroundColor: '#E8EDF5',
+    backgroundColor: '#EEF2F8',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 16,
   },
-  phoneFrameContainer: {
+  phoneShadowWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.22,
+    shadowRadius: 30,
+    elevation: 20,
   },
   phoneBezel: {
-    width: 412,
-    height: 870,
-    backgroundColor: '#1E293B',
-    borderRadius: 48,
-    padding: 10,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.25,
-    shadowRadius: 35,
-    elevation: 20,
+    backgroundColor: '#0F172A',
+    borderRadius: 44,
+    padding: 9,
     position: 'relative',
     overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: '#334155',
   },
   dynamicIsland: {
     position: 'absolute',
-    top: 18,
+    top: 14,
     left: '50%',
-    marginLeft: -48,
-    width: 96,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#0F172A',
-    zIndex: 100,
+    marginLeft: -45,
+    width: 90,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#000000',
+    zIndex: 999,
   },
   screenInner: {
     flex: 1,
-    borderRadius: 40,
+    borderRadius: 36,
     overflow: 'hidden',
     backgroundColor: Colors.background,
   },
   homeBarContainer: {
-    height: 18,
+    height: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FFFFFF',
   },
   homeBar: {
-    width: 120,
+    width: 110,
     height: 4,
     borderRadius: 2,
     backgroundColor: '#94A3B8',
