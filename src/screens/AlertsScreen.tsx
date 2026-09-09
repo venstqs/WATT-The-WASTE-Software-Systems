@@ -35,21 +35,8 @@ export const AlertsScreen: React.FC = () => {
     }
   };
 
-  const getIconBg = (type: Alert['type']) => {
-    switch (type) {
-      case 'critical':
-        return Colors.criticalLight;
-      case 'warning':
-        return Colors.warningLight;
-      case 'info':
-      default:
-        return Colors.primaryLight;
-    }
-  };
-
   const renderAlertItem = ({ item }: { item: Alert }) => {
     const borderColor = getBorderColor(item.type);
-    const iconBg = getIconBg(item.type);
 
     return (
       <View
@@ -57,30 +44,16 @@ export const AlertsScreen: React.FC = () => {
           styles.alertCard,
           {
             borderLeftColor: borderColor,
-            borderLeftWidth: 5,
+            borderLeftWidth: 6,
           },
         ]}
       >
         <View style={styles.cardHeaderRow}>
-          <View style={styles.leftMeta}>
-            <View style={[styles.iconIndicator, { backgroundColor: iconBg }]}>
-              <View style={[styles.dotIndicator, { backgroundColor: borderColor }]} />
-            </View>
-            <Text style={styles.alertTitle}>{item.title}</Text>
-          </View>
+          <Text style={styles.alertTitle}>{item.title}</Text>
           <Text style={styles.timestamp}>{item.timestamp}</Text>
         </View>
 
         <Text style={styles.alertMessage}>{item.message}</Text>
-
-        <View style={styles.alertFooter}>
-          <Text style={styles.nodeRefTag}>STATION REF: {item.nodeId.toUpperCase()}</Text>
-          <View style={[styles.statusPill, { backgroundColor: iconBg }]}>
-            <Text style={[styles.statusPillText, { color: borderColor }]}>
-              {item.type.toUpperCase()} DISPATCH
-            </Text>
-          </View>
-        </View>
       </View>
     );
   };
@@ -89,19 +62,15 @@ export const AlertsScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <View style={styles.container}>
-        {/* Header: Active Alerts ({alerts.length}) */}
+        {/* Header: Active Alerts (3) */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.headerSub}>CDRRMO INCIDENT FEED</Text>
-            <Text style={styles.headerTitle}>Active Alerts ({alerts.length})</Text>
-          </View>
-          <View style={styles.alertBadge}>
-            <View style={styles.redDot} />
-            <Text style={styles.alertBadgeText}>REAL-TIME</Text>
+          <Text style={styles.headerTitle}>Active Alerts ({alerts.length})</Text>
+          <View style={styles.realtimeBadge}>
+            <Text style={styles.realtimeText}>REAL-TIME</Text>
           </View>
         </View>
 
-        {/* Filter Tabs: Horizontal row of touchables */}
+        {/* Filter Pills (Matching Screen_4_Alerts.png) */}
         <View style={styles.filterRow}>
           {(['All', 'Critical', 'Warnings'] as FilterType[]).map((filter) => {
             const isActive = activeFilter === filter;
@@ -109,8 +78,8 @@ export const AlertsScreen: React.FC = () => {
               <TouchableOpacity
                 key={filter}
                 style={[
-                  styles.filterTab,
-                  isActive ? styles.filterTabActive : styles.filterTabInactive,
+                  styles.filterPill,
+                  isActive ? styles.filterPillActive : styles.filterPillInactive,
                 ]}
                 activeOpacity={0.7}
                 onPress={() => setActiveFilter(filter)}
@@ -154,8 +123,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingHorizontal: 18,
+    paddingTop: 16,
   },
   header: {
     flexDirection: 'row',
@@ -163,63 +132,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  headerSub: {
-    color: Colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
   headerTitle: {
     color: Colors.textPrimary,
     fontSize: 24,
     fontWeight: '900',
-    marginTop: 2,
   },
-  alertBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.criticalLight,
-    borderWidth: 1,
-    borderColor: Colors.critical,
-    paddingHorizontal: 10,
+  realtimeBadge: {
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 12,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: 14,
   },
-  redDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.critical,
-    marginRight: 6,
-  },
-  alertBadgeText: {
-    color: Colors.critical,
+  realtimeText: {
+    color: '#DC2626',
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   filterRow: {
     flexDirection: 'row',
     marginBottom: 16,
   },
-  filterTab: {
-    paddingHorizontal: 18,
+  filterPill: {
+    paddingHorizontal: 22,
     paddingVertical: 9,
-    borderRadius: 12,
+    borderRadius: 22,
     marginRight: 10,
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
-  filterTabActive: {
+  filterPillActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  filterTabInactive: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.cardBorder,
+  filterPillInactive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
   },
   filterText: {
     fontSize: 13,
@@ -235,10 +186,10 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
   },
   alertCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: Colors.cardBorder,
+    borderColor: '#E2E8F0',
     padding: 16,
     marginBottom: 14,
     shadowColor: Colors.cardShadow,
@@ -252,24 +203,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
-  },
-  leftMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  iconIndicator: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  dotIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   alertTitle: {
     color: Colors.textPrimary,
@@ -285,34 +218,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   alertMessage: {
-    color: Colors.textPrimary,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 12,
-    fontWeight: '500',
-  },
-  alertFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 10,
-  },
-  nodeRefTag: {
     color: Colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  statusPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  statusPillText: {
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
   },
   emptyContainer: {
     padding: 32,
