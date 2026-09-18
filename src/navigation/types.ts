@@ -17,9 +17,10 @@ export type MainTabParamList = {
 // Citizen tab navigator — simplified public access
 export type CitizenTabParamList = {
   CitizenHomeTab: undefined;
-  CitizenMapTab: undefined;
+  CitizenMapTab: NavigatorScreenParams<MapStackParamList>;
+  CitizenNetworkTab: undefined;
   CitizenAlertsTab: undefined;
-  CitizenHotlinesTab: undefined;
+  CitizenAnalyticsTab: undefined;
 };
 
 export type RootStackParamList = {

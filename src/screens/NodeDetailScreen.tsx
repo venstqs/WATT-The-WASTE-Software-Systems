@@ -25,6 +25,7 @@ import {
 import { useTelemetry } from '../context/TelemetryContext';
 import { MapStackParamList } from '../navigation/types';
 import { predictEsteroLevel } from '../ai/hydrologyModel';
+import { useAuth } from '../context/AuthContext';
 
 type NodeDetailScreenRouteProp = RouteProp<MapStackParamList, 'NodeDetailScreen'>;
 type NodeDetailScreenNavigationProp = StackNavigationProp<MapStackParamList, 'NodeDetailScreen'>;
@@ -42,7 +43,10 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
 }) => {
   const nodeId = route?.params?.nodeId || 'node-07';
 
-  const { getNodeById } = useTelemetry();
+  const { getNodeById, dispatchSiren } = useTelemetry();
+  const { user } = useAuth();
+  const isLGU = user?.persona !== 'CITIZEN';
+
   const defaultNode: Node = getNodeById(nodeId) || getNodeById('node-07') || {
     id: nodeId,
     name: 'Estero Node',
@@ -327,6 +331,26 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
             style={{ marginTop: 10 }}
           />
         </View>
+
+        {/* LGU Admin Controls */}
+        {isLGU && (
+          <View style={styles.adminCard}>
+            <View style={styles.adminHeaderRow}>
+              <Ionicons name="shield-checkmark" size={18} color="#FFFFFF" />
+              <Text style={styles.adminTitle}>LGU COMMAND CONTROLS</Text>
+            </View>
+            <View style={styles.adminButtonsRow}>
+              <TouchableOpacity style={styles.adminBtnSecondary} onPress={() => alert('Ping sent to ' + defaultNode.name)}>
+                <Ionicons name="wifi" size={16} color={Colors.primary} />
+                <Text style={styles.adminBtnSecondaryText}>Ping Node</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.adminBtnPrimary} onPress={() => { dispatchSiren(defaultNode.id); alert('Siren dispatched!'); }}>
+                <Ionicons name="megaphone" size={16} color="#FFFFFF" />
+                <Text style={styles.adminBtnPrimaryText}>Sound Siren</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -619,5 +643,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginTop: 2,
+  },
+  adminCard: {
+    backgroundColor: '#0F172A',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  adminHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  adminTitle: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginLeft: 8,
+  },
+  adminButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  adminBtnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#1E293B',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  adminBtnSecondaryText: {
+    color: Colors.primary,
+    fontSize: 13,
+    fontWeight: '800',
+    marginLeft: 6,
+  },
+  adminBtnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#EF4444',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  adminBtnPrimaryText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+    marginLeft: 6,
   },
 });

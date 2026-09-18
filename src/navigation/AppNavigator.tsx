@@ -59,7 +59,10 @@ const CitizenTabBar: React.FC<any> = ({ state, navigation }) => {
 
   const tabs: { name: keyof CitizenTabParamList; icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
     { name: 'CitizenHomeTab', icon: 'home', label: 'Home' },
+    { name: 'CitizenMapTab', icon: 'map', label: 'Map' },
+    { name: 'CitizenNetworkTab', icon: 'git-network', label: 'Nodes' },
     { name: 'CitizenAlertsTab', icon: 'warning', label: 'Alerts' },
+    { name: 'CitizenAnalyticsTab', icon: 'stats-chart', label: 'Data' },
   ];
 
   return (
@@ -101,7 +104,10 @@ const CitizenNavigator: React.FC = () => (
     screenOptions={{ headerShown: false }}
   >
     <CitizenTab.Screen name="CitizenHomeTab" component={CitizenDashboardScreen} />
+    <CitizenTab.Screen name="CitizenMapTab" component={MapStackNavigator} />
+    <CitizenTab.Screen name="CitizenNetworkTab" component={NetworkScreen} />
     <CitizenTab.Screen name="CitizenAlertsTab" component={CitizenAlertsScreen} />
+    <CitizenTab.Screen name="CitizenAnalyticsTab" component={AnalyticsScreen} />
   </CitizenTab.Navigator>
 );
 
