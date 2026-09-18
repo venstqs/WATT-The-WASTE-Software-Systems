@@ -21,6 +21,7 @@ export interface Alert {
   message: string;
   timestamp: string;
   nodeId: string;
+  stationName: string;
 }
 
 export interface WaterLevelHistory {
@@ -92,6 +93,7 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'Water level at 127cm - EXCEEDED THRESHOLD',
     timestamp: '2:34 PM',
     nodeId: 'node-12',
+    stationName: 'Mabolo Outfall',
   },
   {
     id: 'a2',
@@ -100,6 +102,7 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'Rising trend detected (+15cm/hr)',
     timestamp: '1:15 PM',
     nodeId: 'node-05',
+    stationName: 'Triangulo Drain',
   },
   {
     id: 'a3',
@@ -108,6 +111,7 @@ export const MOCK_ALERTS: Alert[] = [
     message: 'Transmission resumed',
     timestamp: '12:00 PM',
     nodeId: 'node-03',
+    stationName: 'Sabang Estero',
   },
 ];
 

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import Svg, { Rect, Line, Path, Text as SvgText, Circle } from 'react-native-svg';
+import Svg, { Rect, Path, Text as SvgText, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Colors } from '../theme/colors';
 import { Node } from '../data/mockData';
 
@@ -15,18 +15,6 @@ interface GisMapViewProps {
   onSelectNode: (nodeId: string) => void;
   selectedNodeId?: string;
 }
-
-const openStreetMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#F4F1EA' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#475569' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#FFFFFF' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#D6EBD0' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#FFFFFF' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#E2E8F0' }] },
-  { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#FEF3C7' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#BAE6FD' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#0284C7' }] },
-];
 
 export const getMarkerColor = (waterLevel: number): string => {
   if (waterLevel < 80) return Colors.safe;
@@ -39,65 +27,12 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
   onSelectNode,
   selectedNodeId,
 }) => {
-  if (Platform.OS !== 'web') {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const MapView = require('react-native-maps').default;
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { Marker, Callout } = require('react-native-maps');
-
-      const initialRegion = {
-        latitude: 13.6218,
-        longitude: 123.1948,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-
-      return (
-        <View style={styles.nativeContainer}>
-          <MapView
-            style={styles.nativeMap}
-            initialRegion={initialRegion}
-            customMapStyle={openStreetMapStyle}
-            showsCompass={true}
-          >
-            {nodes.map((node) => {
-              const markerColor = getMarkerColor(node.waterLevel);
-              return (
-                <Marker
-                  key={node.id}
-                  coordinate={{ latitude: node.lat, longitude: node.lng }}
-                  title={node.name}
-                  description={`Water: ${node.waterLevel}cm | SOC: ${node.soc}%`}
-                  pinColor={markerColor}
-                  onPress={() => onSelectNode(node.id)}
-                >
-                  <Callout onPress={() => onSelectNode(node.id)}>
-                    <View style={styles.calloutCard}>
-                      <Text style={styles.calloutTitle}>{node.name}</Text>
-                      <Text style={[styles.calloutLevel, { color: markerColor }]}>
-                        {node.waterLevel} cm ({node.aiPrediction} Risk)
-                      </Text>
-                      <Text style={styles.calloutPrompt}>Tap to view telemetry ➔</Text>
-                    </View>
-                  </Callout>
-                </Marker>
-              );
-            })}
-          </MapView>
-        </View>
-      );
-    } catch {
-      // Fall through to OpenStreetMap vector radar view
-    }
-  }
-
-  // Pre-calculated scaled pin coordinates on 360 x 250 canvas
+  // Use scaled coordinates for web/fallback
   const nodeCoords: Record<string, { x: number; y: number }> = {
-    'node-03': { x: 75, y: 70 },   // Sabang Estero
-    'node-05': { x: 195, y: 105 }, // Triangulo Drain
-    'node-07': { x: 260, y: 145 }, // Concepcion Pequena
-    'node-12': { x: 275, y: 195 }, // Mabolo Outfall
+    'node-03': { x: 80, y: 80 },   
+    'node-05': { x: 200, y: 110 }, 
+    'node-07': { x: 270, y: 155 }, 
+    'node-12': { x: 290, y: 215 }, 
   };
 
   return (
@@ -105,84 +40,82 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
       <View style={styles.osmHeader}>
         <View style={styles.osmBadgeRow}>
           <View style={styles.osmLogoDot} />
-          <Text style={styles.osmTitle}>OPENSTREETMAP • NAGA ESTERO GRID</Text>
+          <Text style={styles.osmTitle}>OPENSTREETMAP • NAGA BASIN RADAR</Text>
         </View>
         <Text style={styles.osmCoord}>13.6218° N, 123.1948° E</Text>
       </View>
 
       <View style={styles.svgWrapper}>
-        <Svg viewBox="0 0 360 250" style={styles.svgElement}>
+        <Svg viewBox="0 0 380 280" style={styles.svgElement}>
+          <Defs>
+            <LinearGradient id="waterGrad" x1="0" y1="0" x2="1" y2="1">
+              <Stop offset="0%" stopColor="#BAE6FD" />
+              <Stop offset="100%" stopColor="#38BDF8" />
+            </LinearGradient>
+            <LinearGradient id="parkGrad" x1="0" y1="0" x2="1" y2="1">
+              <Stop offset="0%" stopColor="#DCFCE7" />
+              <Stop offset="100%" stopColor="#BBF7D0" />
+            </LinearGradient>
+          </Defs>
+
           {/* Base Terrain */}
-          <Rect x="0" y="0" width="360" height="250" rx="16" fill="#F4F1EA" />
+          <Rect x="0" y="0" width="380" height="280" fill={Colors.mapLand} />
 
-          {/* Green Parks / Eco Buffers */}
-          <Path
-            d="M 15 20 C 50 10, 90 25, 110 50 C 90 85, 45 75, 20 65 Z"
-            fill="#D6EBD0"
-          />
-          <Path
-            d="M 230 15 C 270 5, 320 20, 345 55 C 330 90, 275 80, 245 55 Z"
-            fill="#D6EBD0"
-          />
-          <Path
-            d="M 240 180 C 280 160, 335 180, 345 220 C 310 245, 255 235, 240 180 Z"
-            fill="#D6EBD0"
-          />
+          {/* Parks & Greenery */}
+          <Path d="M 0 0 L 140 0 L 120 70 L 40 90 Z" fill="url(#parkGrad)" opacity={0.6} />
+          <Path d="M 280 0 L 380 0 L 380 90 L 260 70 Z" fill="url(#parkGrad)" opacity={0.6} />
+          <Path d="M 180 280 L 380 280 L 380 160 L 250 200 Z" fill="url(#parkGrad)" opacity={0.5} />
 
-          {/* Secondary Roads Grid */}
-          <Line x1="0" y1="55" x2="360" y2="55" stroke="#FFFFFF" strokeWidth="5" />
-          <Line x1="0" y1="130" x2="360" y2="130" stroke="#FFFFFF" strokeWidth="4" />
-          <Line x1="0" y1="185" x2="360" y2="185" stroke="#FFFFFF" strokeWidth="4" />
-          <Line x1="120" y1="0" x2="120" y2="250" stroke="#FFFFFF" strokeWidth="5" />
-          <Line x1="220" y1="0" x2="220" y2="250" stroke="#FFFFFF" strokeWidth="4" />
+          {/* Road Grid */}
+          <Path d="M 0 60 L 380 60" stroke="#FFFFFF" strokeWidth="4" />
+          <Path d="M 0 140 L 380 140" stroke="#FFFFFF" strokeWidth="3" />
+          <Path d="M 0 200 L 380 200" stroke="#FFFFFF" strokeWidth="4" />
+          <Path d="M 120 0 L 120 280" stroke="#FFFFFF" strokeWidth="5" />
+          <Path d="M 240 0 L 240 280" stroke="#FFFFFF" strokeWidth="3.5" />
 
-          {/* Primary Highway Arterial (Yellow-Orange casing like OSM) */}
-          <Line x1="25" y1="240" x2="335" y2="15" stroke="#FDE68A" strokeWidth="6" />
-          <Line x1="25" y1="240" x2="335" y2="15" stroke="#D97706" strokeWidth="1" />
+          {/* Main Highway Arterial */}
+          <Path d="M 30 280 Q 80 140 360 20" stroke="#FDE68A" strokeWidth="7" fill="none" />
+          <Path d="M 30 280 Q 80 140 360 20" stroke="#D97706" strokeWidth="1.5" fill="none" />
 
-          {/* Naga River Main Stream (Sky Blue Ribbon) */}
+          {/* Naga River Main Stream */}
           <Path
-            d="M 10 210 Q 95 170 175 125 T 350 45"
-            stroke="#BAE6FD"
-            strokeWidth="16"
+            d="M -10 240 C 80 200, 150 150, 200 130 C 270 100, 320 60, 400 40"
+            stroke="url(#waterGrad)"
+            strokeWidth="18"
             fill="none"
             strokeLinecap="round"
           />
           <Path
-            d="M 10 210 Q 95 170 175 125 T 350 45"
-            stroke="#0284C7"
-            strokeWidth="3"
-            fill="none"
-            strokeLinecap="round"
-          />
-
-          {/* Estero Tributaries */}
-          <Path
-            d="M 175 125 Q 230 170 295 210"
-            stroke="#BAE6FD"
-            strokeWidth="8"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <Path
-            d="M 175 125 Q 230 170 295 210"
+            d="M -10 240 C 80 200, 150 150, 200 130 C 270 100, 320 60, 400 40"
             stroke="#0284C7"
             strokeWidth="2"
             fill="none"
           />
 
-          {/* Waterway Labels */}
-          <SvgText x="20" y="32" fill="#475569" fontSize="9" fontWeight="bold">
+          {/* Secondary Estero Tributary */}
+          <Path
+            d="M 200 130 Q 250 200 320 260"
+            stroke="url(#waterGrad)"
+            strokeWidth="10"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <Path
+            d="M 200 130 Q 250 200 320 260"
+            stroke="#0284C7"
+            strokeWidth="1.5"
+            fill="none"
+          />
+
+          {/* Map Labels */}
+          <SvgText x="15" y="25" fill="#64748B" fontSize="10" fontWeight="900" letterSpacing="1">
             NAGA RIVER BASIN
-          </SvgText>
-          <SvgText x="220" y="238" fill="#64748B" fontSize="8" fontWeight="600">
-            OpenStreetMap Baseline
           </SvgText>
         </Svg>
 
-        {/* Dynamic Clickable Pin Badges */}
+        {/* Dynamic Interactive Pin Droplets */}
         {nodes.map((node) => {
-          const coords = nodeCoords[node.id] || { x: 180, y: 120 };
+          const coords = nodeCoords[node.id] || { x: 190, y: 140 };
           const pinColor = getMarkerColor(node.waterLevel);
           const isSelected = selectedNodeId === node.id;
           const shortName = node.name.split(' - ')[1] || node.name;
@@ -190,18 +123,29 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
           return (
             <TouchableOpacity
               key={node.id}
-              activeOpacity={0.8}
+              activeOpacity={0.9}
               onPress={() => onSelectNode(node.id)}
               style={[
                 styles.mapPinTouchable,
                 {
-                  left: `${(coords.x / 360) * 100}%`,
-                  top: `${(coords.y / 250) * 100}%`,
+                  left: `${(coords.x / 380) * 100}%`,
+                  top: `${(coords.y / 280) * 100}%`,
+                  zIndex: isSelected ? 10 : 1,
+                  transform: [
+                    { translateX: -35 }, 
+                    { translateY: -18 },
+                    { scale: isSelected ? 1.05 : 1 }
+                  ],
                   borderColor: isSelected ? Colors.primary : '#FFFFFF',
+                  shadowColor: isSelected ? Colors.primary : Colors.cardShadow,
+                  shadowOpacity: isSelected ? 0.3 : 0.1,
                 },
               ]}
             >
-              <View style={[styles.innerPinDot, { backgroundColor: pinColor }]} />
+              <View style={styles.pinIndicatorContainer}>
+                <View style={[styles.innerPinDot, { backgroundColor: pinColor }]} />
+                {isSelected && <View style={[styles.pingRing, { borderColor: pinColor }]} />}
+              </View>
               <View style={styles.pinContent}>
                 <Text style={styles.pinNameText} numberOfLines={1}>{shortName}</Text>
                 <Text style={[styles.pinDepthText, { color: pinColor }]}>
@@ -217,91 +161,54 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
 };
 
 const styles = StyleSheet.create({
-  nativeContainer: {
-    height: 290,
-    width: '100%',
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 14,
-  },
-  nativeMap: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  calloutCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 10,
-    borderRadius: 12,
-    minWidth: 160,
-  },
-  calloutTitle: {
-    color: Colors.textPrimary,
-    fontWeight: '800',
-    fontSize: 13,
-  },
-  calloutLevel: {
-    fontWeight: '800',
-    fontSize: 14,
-    marginVertical: 4,
-  },
-  calloutPrompt: {
-    color: Colors.primary,
-    fontSize: 11,
-    fontWeight: '700',
-  },
   webContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    padding: 10,
+    padding: 12,
     marginHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 16,
     shadowColor: Colors.cardShadow,
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   osmHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-    paddingHorizontal: 4,
+    marginBottom: 10,
+    paddingHorizontal: 6,
   },
   osmBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   osmLogoDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: Colors.safe,
     marginRight: 6,
   },
   osmTitle: {
-    color: Colors.primary,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.4,
-  },
-  osmCoord: {
     color: Colors.textSecondary,
     fontSize: 9,
-    fontWeight: '600',
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  osmCoord: {
+    color: Colors.textMuted,
+    fontSize: 9,
+    fontWeight: '700',
   },
   svgWrapper: {
     width: '100%',
-    aspectRatio: 360 / 250,
+    aspectRatio: 380 / 280,
     position: 'relative',
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   svgElement: {
@@ -312,23 +219,36 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
-    transform: [{ translateX: -35 }, { translateY: -16 }],
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
     borderWidth: 1.5,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.18,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
     elevation: 4,
+    minWidth: 70,
+  },
+  pinIndicatorContainer: {
+    position: 'relative',
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
   },
   innerPinDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  pingRing: {
+    position: 'absolute',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    opacity: 0.4,
   },
   pinContent: {
     alignItems: 'flex-start',
@@ -336,11 +256,11 @@ const styles = StyleSheet.create({
   pinNameText: {
     color: Colors.textPrimary,
     fontSize: 9,
-    fontWeight: '800',
-    maxWidth: 65,
+    fontWeight: '900',
+    maxWidth: 70,
   },
   pinDepthText: {
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '900',
   },
 });

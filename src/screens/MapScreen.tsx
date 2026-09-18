@@ -39,57 +39,66 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Royal Blue Hero Header */}
+        {/* Executive Header */}
         <View style={styles.heroHeader}>
           <View style={styles.heroTopRow}>
             <View>
               <Text style={styles.heroSubtitle}>CDRRMO OPERATIONS</Text>
-              <Text style={styles.heroTitle}>Estero-Volt Network</Text>
+              <Text style={styles.heroTitle}>Estero-Volt Grid</Text>
             </View>
-            <View style={styles.onlineBadge}>
-              <View style={styles.greenPulse} />
-              <Text style={styles.onlineText}>ONLINE</Text>
+            {/* Operator Avatar & Search Badge */}
+            <View style={styles.headerControls}>
+              <View style={styles.searchBtn}>
+                <Ionicons name="search" size={18} color="#FFFFFF" />
+              </View>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>CD</Text>
+              </View>
             </View>
           </View>
-          <Text style={styles.heroTagline}>
-            Autonomous IoT Flood Early Warning • Naga City
-          </Text>
         </View>
 
-        {/* 3 Floating Summary Cards */}
+        {/* 3 Floating Summary Cards (Dribbble styled) */}
         <View style={styles.summaryRow}>
-          {/* Card 1 */}
           <View style={styles.summaryCard}>
-            <Text style={styles.cardLabel}>Active Nodes</Text>
-            <Text style={styles.cardGreenText}>24/24</Text>
-            <Text style={styles.cardSubtext}>100% Online</Text>
+            <View style={styles.summaryIconBoxBlue}>
+              <Ionicons name="git-network" size={16} color={Colors.primary} />
+            </View>
+            <View>
+              <Text style={styles.cardLabel}>Active Nodes</Text>
+              <Text style={styles.cardValueText}>24</Text>
+            </View>
           </View>
 
-          {/* Card 2 */}
           <View style={styles.summaryCard}>
-            <Text style={styles.cardLabel}>Avg SOC</Text>
-            <Text style={styles.cardBlueText}>94%</Text>
-            <Text style={styles.cardSubtext}>Supercap Grid</Text>
+            <View style={styles.summaryIconBoxGreen}>
+              <Ionicons name="battery-charging" size={16} color={Colors.safe} />
+            </View>
+            <View>
+              <Text style={styles.cardLabel}>Grid SOC</Text>
+              <Text style={styles.cardValueText}>94%</Text>
+            </View>
           </View>
 
-          {/* Card 3 */}
           <View style={styles.summaryCard}>
-            <Text style={styles.cardLabel}>Last Sync</Text>
-            <Text style={styles.cardGrayText}>2m ago</Text>
-            <Text style={styles.cardSubtext}>LoRa Mesh</Text>
+            <View style={styles.summaryIconBoxCyan}>
+              <Ionicons name="radio" size={16} color={Colors.info} />
+            </View>
+            <View>
+              <Text style={styles.cardLabel}>Mesh Sync</Text>
+              <Text style={styles.cardValueText}>Live</Text>
+            </View>
           </View>
         </View>
 
         {/* Section Label */}
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleRow}>
-            <View style={styles.accentBar} />
             <Text style={styles.sectionTitle}>NAGA GIS HYDROLOGICAL RADAR</Text>
           </View>
-          <Text style={styles.sectionHint}>Tap pin to drill down</Text>
         </View>
 
-        {/* OpenStreetMap Component */}
+        {/* GIS Map Component */}
         <GisMapView
           nodes={nodes}
           onSelectNode={handleNodePress}
@@ -98,13 +107,13 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
 
         {/* Station List Header */}
         <View style={styles.stationHeaderRow}>
-          <View style={styles.sectionTitleRow}>
-            <View style={styles.accentBar} />
-            <Text style={styles.sectionTitle}>KEY ESTERO STATIONS ({nodes.length})</Text>
-          </View>
+          <Text style={styles.sectionTitle}>KEY ESTERO STATIONS ({nodes.length})</Text>
+          <TouchableOpacity>
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Station Cards */}
+        {/* Modern Station Cards */}
         <View style={styles.nodeListContainer}>
           {nodes.map((node) => {
             const markerColor = getMarkerColor(node.waterLevel);
@@ -118,60 +127,55 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
                 activeOpacity={0.8}
                 onPress={() => handleNodePress(node.id)}
               >
-                <View style={[styles.cardStripe, { backgroundColor: markerColor }]} />
                 <View style={styles.cardMain}>
                   <View style={styles.cardTop}>
-                    <View>
-                      <Text style={styles.nodeStationName}>{shortName}</Text>
-                      <Text style={styles.nodeIdTag}>{node.id.toUpperCase()}</Text>
+                    <View style={styles.cardTopLeft}>
+                      {/* Colored Status Circle */}
+                      <View style={[styles.statusIconRing, { backgroundColor: markerColor + '20' }]}>
+                        <View style={[styles.statusIconDot, { backgroundColor: markerColor }]} />
+                      </View>
+                      <View>
+                        <Text style={styles.nodeStationName}>{shortName}</Text>
+                        <Text style={styles.nodeIdTag}>{node.id.toUpperCase()}</Text>
+                      </View>
                     </View>
-                    <View style={styles.depthPill}>
+                    <View style={styles.depthBadge}>
                       <Text style={[styles.depthValue, { color: markerColor }]}>
-                        {node.waterLevel} cm
+                        {node.waterLevel}cm
                       </Text>
                     </View>
                   </View>
 
-                  {/* Threshold Progress Bar */}
+                  {/* Gradient Threshold Progress Bar */}
                   <View style={styles.progressContainer}>
                     <View style={styles.progressTrack}>
                       <View
                         style={[
                           styles.progressBar,
-                          {
-                            width: `${thresholdPercent}%`,
-                            backgroundColor: markerColor,
-                          },
+                          { width: `${thresholdPercent}%`, backgroundColor: markerColor },
                         ]}
                       />
                     </View>
-                    <Text style={styles.thresholdPercentText}>{thresholdPercent}% of 120cm limit</Text>
                   </View>
 
-                  {/* Telemetry Chips */}
+                  {/* Minimalist Telemetry Chips */}
                   <View style={styles.telemetryRow}>
                     <View style={styles.telemetryChip}>
-                      <Ionicons name="battery-charging" size={12} color={Colors.primary} />
-                      <Text style={styles.telemetryText}>SOC: {node.soc}%</Text>
+                      <Ionicons name="battery-half" size={12} color={Colors.textSecondary} />
+                      <Text style={styles.telemetryText}>{node.soc}% SOC</Text>
                     </View>
                     <View style={styles.telemetryChip}>
-                      <Ionicons name="flash-outline" size={12} color={Colors.safe} />
-                      <Text style={styles.telemetryText}>BMFC: {node.powerOutput}mW</Text>
+                      <Ionicons name="leaf" size={12} color={Colors.textSecondary} />
+                      <Text style={styles.telemetryText}>{node.powerOutput}mW BMFC</Text>
                     </View>
-                    <View style={styles.telemetryChip}>
-                      <Ionicons name="pulse" size={12} color={markerColor} />
+                    <View style={[styles.telemetryChip, { backgroundColor: markerColor + '15' }]}>
+                      <Ionicons name="hardware-chip" size={12} color={markerColor} />
                       <Text style={[styles.telemetryText, { color: markerColor, fontWeight: '800' }]}>
-                        {node.aiPrediction} Risk
+                        {node.aiPrediction}
                       </Text>
                     </View>
                   </View>
                 </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={Colors.textMuted}
-                  style={styles.arrowIcon}
-                />
               </TouchableOpacity>
             );
           })}
@@ -191,15 +195,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   scrollContent: {
-    paddingBottom: 36,
+    paddingBottom: 110, // Account for floating tab bar
   },
   heroHeader: {
     backgroundColor: Colors.primaryHeader,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 16,
-    paddingBottom: 36,
-    borderBottomLeftRadius: 26,
-    borderBottomRightRadius: 26,
+    paddingBottom: 50,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -210,193 +214,198 @@ const styles = StyleSheet.create({
     color: '#93C5FD',
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.8,
+    letterSpacing: 1.2,
   },
   heroTitle: {
     color: '#FFFFFF',
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
-    letterSpacing: -0.3,
-    marginTop: 2,
+    letterSpacing: -0.5,
+    marginTop: 4,
   },
-  heroTagline: {
-    color: '#E0E7FF',
-    fontSize: 11,
-    marginTop: 6,
-    fontWeight: '500',
-  },
-  onlineBadge: {
+  headerControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0B237C',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#38BDF8',
   },
-  greenPulse: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.safe,
-    marginRight: 6,
+  searchBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
-  onlineText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#93C5FD',
+  },
+  avatarText: {
+    color: Colors.primaryHeader,
+    fontSize: 13,
+    fontWeight: '900',
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    marginTop: -20,
-    marginBottom: 14,
+    marginTop: -30,
+    marginBottom: 20,
   },
   summaryCard: {
     flex: 1,
+    flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    marginHorizontal: 3,
+    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginHorizontal: 4,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: Colors.cardShadow,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowRadius: 16,
+    elevation: 4,
     alignItems: 'center',
+  },
+  summaryIconBoxBlue: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: Colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  summaryIconBoxGreen: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: Colors.safeLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  summaryIconBoxCyan: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: Colors.infoLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   cardLabel: {
     color: Colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  cardGreenText: {
-    color: Colors.safe,
-    fontSize: 18,
-    fontWeight: '900',
-    marginTop: 2,
-  },
-  cardBlueText: {
-    color: Colors.primary,
-    fontSize: 18,
-    fontWeight: '900',
-    marginTop: 2,
-  },
-  cardGrayText: {
-    color: Colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  cardSubtext: {
-    color: Colors.textMuted,
     fontSize: 9,
-    fontWeight: '600',
+    fontWeight: '800',
+  },
+  cardValueText: {
+    color: Colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '900',
     marginTop: 2,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    marginBottom: 10,
-    marginTop: 4,
+    paddingHorizontal: 20,
+    marginBottom: 12,
   },
   stationHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    marginBottom: 10,
-    marginTop: 6,
+    paddingHorizontal: 20,
+    marginBottom: 12,
   },
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  accentBar: {
-    width: 3.5,
-    height: 14,
-    borderRadius: 2,
-    backgroundColor: Colors.primary,
-    marginRight: 8,
-  },
   sectionTitle: {
     color: Colors.textPrimary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  sectionHint: {
+  viewAllText: {
     color: Colors.primary,
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
   },
   nodeListContainer: {
     paddingHorizontal: 16,
   },
   nodeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    marginBottom: 10,
+    borderRadius: 24,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    overflow: 'hidden',
     shadowColor: Colors.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 12,
     elevation: 2,
   },
-  cardStripe: {
-    width: 5,
-    alignSelf: 'stretch',
-  },
   cardMain: {
-    flex: 1,
-    padding: 14,
+    padding: 16,
   },
   cardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  cardTopLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusIconRing: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  statusIconDot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
   },
   nodeStationName: {
     color: Colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '900',
   },
   nodeIdTag: {
     color: Colors.textMuted,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '700',
-    marginTop: 1,
+    marginTop: 2,
   },
-  depthPill: {
+  depthBadge: {
     backgroundColor: '#F8FAFC',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   depthValue: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '900',
   },
   progressContainer: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   progressTrack: {
-    height: 5,
+    height: 6,
     backgroundColor: '#F1F5F9',
     borderRadius: 3,
     overflow: 'hidden',
@@ -404,12 +413,6 @@ const styles = StyleSheet.create({
   progressBar: {
     height: '100%',
     borderRadius: 3,
-  },
-  thresholdPercentText: {
-    color: Colors.textMuted,
-    fontSize: 9,
-    fontWeight: '600',
-    marginTop: 3,
   },
   telemetryRow: {
     flexDirection: 'row',
@@ -419,18 +422,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-    marginRight: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 8,
   },
   telemetryText: {
     color: Colors.textSecondary,
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
     marginLeft: 4,
-  },
-  arrowIcon: {
-    marginRight: 12,
   },
 });

@@ -9,10 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path, Circle } from 'react-native-svg';
 import { Colors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
 
@@ -23,8 +23,8 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  const [email, setEmail] = useState('officer@naga.gov.ph');
-  const [password, setPassword] = useState('esterovolt2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = () => {
@@ -32,7 +32,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   const handleQuickDemoFill = () => {
-    setEmail('cdrrmo.telemetry@naga.gov.ph');
+    setEmail('officer@naga.gov.ph');
     setPassword('naga-edge-ai-99');
   };
 
@@ -48,41 +48,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* Royal Blue Hero Banner */}
+          {/* Deep Corporate Royal Blue Hero Banner */}
           <View style={styles.heroHeader}>
-            {/* Background Aesthetic Waves */}
-            <View style={styles.bgWaveWrapper}>
-              <Svg width={360} height={120} viewBox="0 0 360 120">
-                <Path
-                  d="M 0 40 Q 90 80, 180 40 T 360 40 L 360 120 L 0 120 Z"
-                  fill="#0B2588"
-                  opacity={0.4}
-                />
-                <Path
-                  d="M 0 65 Q 90 20, 180 65 T 360 65 L 360 120 L 0 120 Z"
-                  fill="#1B42D9"
-                  opacity={0.3}
-                />
-              </Svg>
-            </View>
-
-            {/* Glowing Tech Shield Crest */}
             <View style={styles.crestBadge}>
-              <Svg width={64} height={64} viewBox="0 0 64 64">
-                <Path
-                  d="M 32 4 L 56 15 L 56 36 C 56 50 32 60 32 60 C 32 60 8 50 8 36 L 8 15 Z"
-                  fill="#FFFFFF"
-                />
-                <Path
-                  d="M 32 8 L 52 17 L 52 35 C 52 46 32 55 32 55 C 32 55 12 46 12 35 L 12 17 Z"
-                  fill={Colors.primary}
-                />
-                <Path
-                  d="M 34 16 L 24 31 L 32 31 L 30 46 L 41 29 L 32 29 Z"
-                  fill="#FFFFFF"
-                />
-                <Circle cx="32" cy="50" r="2.5" fill="#38BDF8" />
-              </Svg>
+              <Ionicons name="water" size={32} color={Colors.primary} />
             </View>
 
             <Text style={styles.heroTitle}>Estero-Volt</Text>
@@ -95,7 +64,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Form Content Sheet */}
+          {/* Floating Form Content Sheet */}
           <View style={styles.sheetContainer}>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Officer Sign In</Text>
@@ -190,7 +159,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
   },
   keyboardContainer: {
     flex: 1,
@@ -200,24 +169,27 @@ const styles = StyleSheet.create({
   },
   heroHeader: {
     backgroundColor: Colors.primaryHeader,
-    paddingTop: 36,
-    paddingBottom: 32,
+    paddingTop: 60,
+    paddingBottom: 60,
     alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
-  },
-  bgWaveWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
   crestBadge: {
-    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   heroTitle: {
     color: '#FFFFFF',
@@ -236,13 +208,13 @@ const styles = StyleSheet.create({
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0B237C',
+    backgroundColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
-    marginTop: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginTop: 16,
     borderWidth: 1,
-    borderColor: '#38BDF8',
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   statusDot: {
     width: 6,
@@ -250,6 +222,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: Colors.safe,
     marginRight: 8,
+    shadowColor: Colors.safe,
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
   },
   statusPillText: {
     color: '#FFFFFF',
@@ -260,32 +236,40 @@ const styles = StyleSheet.create({
   sheetContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingTop: 28,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -30,
+    paddingHorizontal: 28,
+    paddingTop: 32,
     paddingBottom: 24,
+    shadowColor: Colors.cardShadow,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 10,
   },
   sheetHeader: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   sheetTitle: {
     color: Colors.textPrimary,
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '900',
   },
   sheetSubtitle: {
     color: Colors.textSecondary,
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: 13,
+    marginTop: 6,
     lineHeight: 18,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 18,
   },
   inputLabelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   inputLabel: {
     color: Colors.textPrimary,
@@ -296,19 +280,23 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 11,
     fontWeight: '700',
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: 22,
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    paddingHorizontal: 14,
-    height: 48,
+    paddingHorizontal: 16,
+    height: 54,
   },
   inputIcon: {
-    marginRight: 10,
+    marginRight: 12,
   },
   input: {
     flex: 1,
@@ -317,21 +305,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   eyeBtn: {
-    padding: 6,
+    padding: 8,
   },
   signInBtn: {
     flexDirection: 'row',
     backgroundColor: Colors.primary,
-    borderRadius: 24,
-    height: 52,
+    borderRadius: 16,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 12,
     shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 6,
   },
   signInBtnText: {
     color: '#FFFFFF',
@@ -344,7 +332,7 @@ const styles = StyleSheet.create({
   },
   footerBadgeContainer: {
     alignItems: 'center',
-    marginTop: 22,
+    marginTop: 28,
   },
   securityPill: {
     flexDirection: 'row',
