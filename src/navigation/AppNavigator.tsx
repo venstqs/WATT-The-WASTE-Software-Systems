@@ -41,6 +41,15 @@ const MainTabNavigator: React.FC = () => {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: false,
+        tabBarItemStyle: {
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 0,
+        },
+        tabBarIconStyle: {
+          width: 'auto',
+          height: 'auto',
+        },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'map';
 
@@ -114,9 +123,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 8,
     paddingHorizontal: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
+    paddingBottom: 0, // ensure no safe area bottom padding pushes it up inside the absolute container
   },
   tabIconContainer: {
     flexDirection: 'row',
@@ -125,6 +132,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
+    height: 44, // give it a fixed height
   },
   tabIconContainerActive: {
     backgroundColor: Colors.primary,
