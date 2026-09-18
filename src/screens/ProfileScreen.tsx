@@ -11,13 +11,13 @@ export const ProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         {/* Header Profile */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Ionicons name="person" size={40} color="#FFFFFF" />
+            <Ionicons name="person" size={40} color={Colors.primary} />
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark" size={12} color="#FFFFFF" />
             </View>
@@ -115,7 +115,7 @@ export const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0F172A', // Dark mode tech vibe for settings
+    backgroundColor: Colors.background,
   },
   scrollContent: {
     paddingHorizontal: 24,
@@ -129,12 +129,17 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
     borderWidth: 3,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
+    borderColor: '#FFFFFF',
+    shadowColor: Colors.cardShadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
   },
   verifiedBadge: {
     position: 'absolute',
@@ -147,29 +152,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#0F172A',
+    borderColor: '#FFFFFF',
   },
   userName: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#F8FAFC',
+    color: Colors.textPrimary,
   },
   userRole: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: Colors.textSecondary,
     marginTop: 4,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   configCard: {
-    backgroundColor: '#1E293B',
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
+    shadowColor: Colors.cardShadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: Colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 16,
@@ -180,7 +190,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: Colors.cardBorder,
   },
   configInfo: {
     flex: 1,
@@ -188,12 +198,12 @@ const styles = StyleSheet.create({
   },
   configTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#F8FAFC',
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
   configSubtitle: {
     fontSize: 13,
-    color: '#64748B',
+    color: Colors.textSecondary,
     marginTop: 4,
   },
   actionRow: {
@@ -201,13 +211,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
+    borderBottomColor: Colors.cardBorder,
   },
   actionIcon: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#334155',
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
@@ -215,8 +225,8 @@ const styles = StyleSheet.create({
   actionText: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '500',
-    color: '#F8FAFC',
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
   logoutButton: {
     flexDirection: 'row',
@@ -227,7 +237,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   logoutText: {
     marginLeft: 8,
@@ -238,7 +248,7 @@ const styles = StyleSheet.create({
   versionText: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#475569',
+    color: Colors.textMuted,
     fontWeight: '600',
   },
 });
