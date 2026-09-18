@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,18 +21,25 @@ interface LoginScreenProps {
   navigation: LoginScreenNavigationProp;
 }
 
+type Persona = 'CDRRMO' | 'DENR';
+
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [persona, setPersona] = useState<Persona>('CDRRMO');
 
   const handleSignIn = () => {
     navigation.replace('MainTabNavigator');
   };
 
   const handleQuickDemoFill = () => {
-    setEmail('officer@naga.gov.ph');
-    setPassword('naga-edge-ai-99');
+    if (persona === 'CDRRMO') {
+      setEmail('disaster-ops@naga.gov.ph');
+    } else {
+      setEmail('water-quality@emb.gov.ph');
+    }
+    setPassword('estero-volt-99');
   };
 
   return (
@@ -56,26 +62,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             <Text style={styles.heroTitle}>Estero-Volt</Text>
             <Text style={styles.heroSubtitle}>
-              Naga City Disaster Risk Reduction & Management Office
+              Autonomous Bio-Electrochemical IoT Network
             </Text>
             <View style={styles.statusPill}>
               <View style={styles.statusDot} />
-              <Text style={styles.statusPillText}>CDRRMO IOT TELEMETRY GRID</Text>
+              <Text style={styles.statusPillText}>EDGE-AI TELEMETRY GRID ACTIVE</Text>
             </View>
           </View>
 
           {/* Floating Form Content Sheet */}
           <View style={styles.sheetContainer}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Officer Sign In</Text>
+              <Text style={styles.sheetTitle}>Stakeholder Portal</Text>
               <Text style={styles.sheetSubtitle}>
-                Access autonomous off-grid hydrological sensors & Edge-AI flood alerts
+                Access real-time LoRaWAN flood data and BMFC bioremediation metrics.
               </Text>
+            </View>
+
+            {/* Persona Toggle */}
+            <View style={styles.personaToggleContainer}>
+              <TouchableOpacity
+                style={[styles.personaBtn, persona === 'CDRRMO' && styles.personaBtnActive]}
+                onPress={() => { setPersona('CDRRMO'); setEmail(''); }}
+              >
+                <Ionicons name="warning" size={14} color={persona === 'CDRRMO' ? '#FFFFFF' : Colors.textSecondary} />
+                <Text style={[styles.personaText, persona === 'CDRRMO' && styles.personaTextActive]}>CDRRMO (Disaster)</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.personaBtn, persona === 'DENR' && styles.personaBtnActive]}
+                onPress={() => { setPersona('DENR'); setEmail(''); }}
+              >
+                <Ionicons name="leaf" size={14} color={persona === 'DENR' ? '#FFFFFF' : Colors.textSecondary} />
+                <Text style={[styles.personaText, persona === 'DENR' && styles.personaTextActive]}>DENR-EMB (Water)</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Email Input */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Official Email</Text>
+              <Text style={styles.inputLabel}>Official Credentials</Text>
               <View style={styles.inputWrapper}>
                 <Ionicons
                   name="mail-outline"
@@ -85,7 +109,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="officer@naga.gov.ph"
+                  placeholder={persona === 'CDRRMO' ? "ops@naga.gov.ph" : "emb@denr.gov.ph"}
                   placeholderTextColor={Colors.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -98,7 +122,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Password Input */}
             <View style={styles.inputGroup}>
               <View style={styles.inputLabelRow}>
-                <Text style={styles.inputLabel}>Security Credential</Text>
+                <Text style={styles.inputLabel}>Security Hash</Text>
                 <TouchableOpacity onPress={handleQuickDemoFill}>
                   <Text style={styles.demoFillText}>Quick Fill Demo</Text>
                 </TouchableOpacity>
@@ -137,7 +161,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               activeOpacity={0.85}
               onPress={handleSignIn}
             >
-              <Text style={styles.signInBtnText}>Access Telemetry Grid</Text>
+              <Text style={styles.signInBtnText}>Access Dashboard</Text>
               <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={styles.btnArrow} />
             </TouchableOpacity>
 
@@ -145,9 +169,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <View style={styles.footerBadgeContainer}>
               <View style={styles.securityPill}>
                 <Ionicons name="shield-checkmark" size={14} color={Colors.safe} />
-                <Text style={styles.securityText}>CDRRMO Official Use Only</Text>
+                <Text style={styles.securityText}>Authorized Access Only</Text>
               </View>
-              <Text style={styles.versionNote}>BMFC Off-Grid Mesh • Firmware v2.4</Text>
+              <Text style={styles.versionNote}>Estero-Volt v2.4 • Supabase Cloud Verified</Text>
             </View>
           </View>
         </ScrollView>
@@ -249,7 +273,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   sheetHeader: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sheetTitle: {
     color: Colors.textPrimary,
@@ -261,6 +285,38 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 6,
     lineHeight: 18,
+  },
+  personaToggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 16,
+    padding: 4,
+    marginBottom: 24,
+  },
+  personaBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  personaBtnActive: {
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  personaText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    marginLeft: 6,
+  },
+  personaTextActive: {
+    color: '#FFFFFF',
   },
   inputGroup: {
     marginBottom: 18,

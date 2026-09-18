@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart, LineChart } from 'react-native-chart-kit';
@@ -53,7 +52,7 @@ export const AnalyticsScreen: React.FC = () => {
           <Text style={styles.headerTitle}>ESG Analytics</Text>
           <View style={styles.headerRight}>
             <View style={styles.sdgBadge}>
-              <Text style={styles.sdgText}>SDG 11 & 13</Text>
+              <Text style={styles.sdgText}>SDG 6, 7, 11 & 12</Text>
             </View>
           </View>
         </View>
@@ -85,45 +84,45 @@ export const AnalyticsScreen: React.FC = () => {
           })}
         </View>
 
-        {/* 2x2 Dribbble Stats Grid */}
+        {/* 2x2 Dribbble Stats Grid (Aligned with JA WE Proposal) */}
         <View style={styles.statsGrid}>
           <View style={styles.statsRow}>
-            {/* Box 1 */}
+            {/* Box 1 - SDG 7 */}
             <View style={[styles.statsBox, { backgroundColor: Colors.primary }]}>
               <View style={styles.iconCircleWhite}>
                 <Ionicons name="flash" size={16} color={Colors.primary} />
               </View>
               <Text style={styles.statsValueWhite}>2.4 kWh</Text>
-              <Text style={styles.statsLabelWhite}>Bio-Energy Harvested</Text>
+              <Text style={styles.statsLabelWhite}>Scope 2 Offset</Text>
             </View>
 
-            {/* Box 2 */}
+            {/* Box 2 - SDG 12 */}
             <View style={styles.statsBox}>
               <View style={[styles.iconCircleColor, { backgroundColor: Colors.safeLight }]}>
                 <Ionicons name="battery-dead" size={16} color={Colors.safe} />
               </View>
               <Text style={styles.statsValueColor}>144</Text>
-              <Text style={styles.statsLabelColor}>Toxic Batteries Saved</Text>
+              <Text style={styles.statsLabelColor}>E-Waste Eradicated</Text>
             </View>
           </View>
 
           <View style={styles.statsRow}>
-            {/* Box 3 */}
+            {/* Box 3 - SDG 6 */}
             <View style={styles.statsBox}>
               <View style={[styles.iconCircleColor, { backgroundColor: Colors.infoLight }]}>
                 <Ionicons name="water" size={16} color={Colors.info} />
               </View>
-              <Text style={styles.statsValueColor}>1.8 kg</Text>
-              <Text style={styles.statsLabelColor}>CO₂ Silt Offset</Text>
+              <Text style={styles.statsValueColor}>78%</Text>
+              <Text style={styles.statsLabelColor}>BOD Drop (Bioremediation)</Text>
             </View>
 
-            {/* Box 4 */}
+            {/* Box 4 - Health & Bio-Gas Mitigation */}
             <View style={styles.statsBox}>
               <View style={[styles.iconCircleColor, { backgroundColor: '#F1F5F9' }]}>
-                <Ionicons name="hardware-chip" size={16} color={Colors.primary} />
+                <Ionicons name="cloud-offline" size={16} color={Colors.primary} />
               </View>
-              <Text style={styles.statsValueColor}>98.4%</Text>
-              <Text style={styles.statsLabelColor}>AI Model Accuracy</Text>
+              <Text style={styles.statsValueColor}>1.8 kg</Text>
+              <Text style={styles.statsLabelColor}>H₂S Mitigation</Text>
             </View>
           </View>
         </View>
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    padding: 20,
+    padding: 16,
     marginHorizontal: 4,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -305,7 +304,7 @@ const styles = StyleSheet.create({
   },
   statsValueWhite: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
   },
   statsLabelWhite: {
@@ -316,7 +315,7 @@ const styles = StyleSheet.create({
   },
   statsValueColor: {
     color: Colors.textPrimary,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
   },
   statsLabelColor: {

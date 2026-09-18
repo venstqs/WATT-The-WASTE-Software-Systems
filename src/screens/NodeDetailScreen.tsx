@@ -13,12 +13,12 @@ import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Path, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Colors } from '../theme/colors';
 import {
   MOCK_NODES,
-  MOCK_CHART_DATA,
   NODE_CHART_DATA_MAP,
+  MOCK_CHART_DATA,
   Node,
   WaterLevelHistory,
 } from '../data/mockData';
@@ -43,19 +43,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
 
   const defaultNode: Node =
     MOCK_NODES.find((n) => n.id === nodeId) ||
-    MOCK_NODES[2] || {
-      id: 'node-07',
-      name: 'Node #07 - Concepcion Pequena',
-      lat: 13.62,
-      lng: 123.2,
-      status: 'normal',
-      waterLevel: 67,
-      soc: 95,
-      powerOutput: 3.1,
-      signalStrength: -85,
-      aiPrediction: 'LOW',
-      lastSync: '30s ago',
-    };
+    MOCK_NODES[2];
 
   const [scenario, setScenario] = useState<ScenarioMode>('baseline');
 
@@ -93,6 +81,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
           text: '#B91C1C',
           iconColor: Colors.critical,
           gradient: ['#FCA5A5', '#EF4444'],
+          dutyCycle: '2m',
         };
       case 'MEDIUM':
         return {
@@ -101,6 +90,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
           text: '#B45309',
           iconColor: Colors.warning,
           gradient: ['#FCD34D', '#F59E0B'],
+          dutyCycle: '15m',
         };
       case 'LOW':
       default:
@@ -110,6 +100,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
           text: '#0369A1',
           iconColor: Colors.info,
           gradient: ['#7DD3FC', '#0284C7'],
+          dutyCycle: '30m',
         };
     }
   };
@@ -139,11 +130,11 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
           </Text>
           <View style={styles.liveBadge}>
             <View style={styles.liveDot} />
-            <Text style={styles.liveText}>SYNCED</Text>
+            <Text style={styles.liveText}>LORA CSS SYNC</Text>
           </View>
         </View>
 
-        {/* High-Tech Radial Telemetry Gauge (Inspired by Speed Test Dribbble) */}
+        {/* High-Tech Radial Telemetry Gauge */}
         <View style={styles.gaugeCard}>
           <View style={styles.gaugeWrapper}>
             <Svg width={220} height={150} viewBox="0 0 220 150">
@@ -153,7 +144,6 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
                   <Stop offset="100%" stopColor={riskStyle.gradient[1]} />
                 </LinearGradient>
               </Defs>
-              {/* Background Arc */}
               <Path
                 d="M 20 130 A 90 90 0 0 1 200 130"
                 stroke="#F1F5F9"
@@ -161,7 +151,6 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
                 strokeLinecap="round"
                 fill="none"
               />
-              {/* Foreground Arc */}
               <Path
                 d="M 20 130 A 90 90 0 0 1 200 130"
                 stroke="url(#arcGrad)"
@@ -174,7 +163,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
             </Svg>
             <View style={styles.gaugeTextInside}>
               <Text style={styles.gaugeValue}>{liveInference.predictedWaterLevel}</Text>
-              <Text style={styles.gaugeUnit}>Centimeters</Text>
+              <Text style={styles.gaugeUnit}>JSN-SR04T Sensor (cm)</Text>
               <View style={[styles.riskPill, { backgroundColor: riskStyle.bg, borderColor: riskStyle.border }]}>
                 <Text style={[styles.riskPillText, { color: riskStyle.text }]}>{liveInference.riskLevel}</Text>
               </View>
@@ -196,8 +185,33 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
             <View style={styles.metricItem}>
               <Ionicons name="leaf-outline" size={16} color={Colors.primary} />
               <Text style={styles.metricVal}>{defaultNode.powerOutput}mW</Text>
-              <Text style={styles.metricLbl}>BMFC Harvest</Text>
+              <Text style={styles.metricLbl}>PANI-Bioanode</Text>
             </View>
+          </View>
+        </View>
+
+        {/* Hardware & Power Management Card */}
+        <View style={styles.hardwareCard}>
+          <Text style={styles.hardwareCardTitle}>Power Management IC (BQ25504)</Text>
+          <View style={styles.hwStatsRow}>
+            <View style={styles.hwStatItem}>
+              <Text style={styles.hwStatLabel}>MPPT Efficiency</Text>
+              <Text style={styles.hwStatValue}>94.2%</Text>
+            </View>
+            <View style={styles.hwStatItem}>
+              <Text style={styles.hwStatLabel}>Recharge Cycle</Text>
+              <Text style={styles.hwStatValue}>7.7s</Text>
+            </View>
+            <View style={styles.hwStatItem}>
+              <Text style={styles.hwStatLabel}>Buffer Voltage</Text>
+              <Text style={styles.hwStatValue}>{defaultNode.voltage}V</Text>
+            </View>
+          </View>
+          <View style={styles.dutyCycleBanner}>
+            <Ionicons name="radio" size={14} color="#065F46" style={{ marginRight: 6 }} />
+            <Text style={styles.dutyCycleText}>
+              Adaptive LoRaWAN Duty Cycle: <Text style={{ fontWeight: '900' }}>{riskStyle.dutyCycle}</Text> bursts
+            </Text>
           </View>
         </View>
 
@@ -208,22 +222,25 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
               <View style={styles.aiChip}>
                 <Ionicons name="hardware-chip" size={14} color="#FFFFFF" />
               </View>
-              <Text style={styles.aiTitle}>On-Device Neural Net Inference</Text>
+              <View>
+                <Text style={styles.aiTitle}>On-Device Edge-AI Inference</Text>
+                <Text style={styles.aiSubtitle}>2-Layer LSTM (50 neurons) | ESP32</Text>
+              </View>
             </View>
-            <Text style={styles.confidenceScore}>{liveInference.confidence}% Confidence</Text>
+            <Text style={styles.confidenceScore}>{liveInference.confidence}% Conf.</Text>
           </View>
           
           <Text style={styles.aiRecommendation}>{liveInference.recommendation}</Text>
           
           <View style={styles.scenarioButtonGroup}>
-            <Text style={styles.scenarioPrompt}>SIMULATE ENVIRONMENTAL SCENARIO:</Text>
+            <Text style={styles.scenarioPrompt}>SIMULATE HYDROLOGICAL SCENARIO:</Text>
             <View style={styles.scenarioButtonsRow}>
               <TouchableOpacity
                 style={[styles.scenarioBtn, scenario === 'baseline' && styles.scenarioBtnActive]}
                 onPress={() => setScenario('baseline')}
               >
                 <Text style={[styles.scenarioBtnText, scenario === 'baseline' && styles.scenarioBtnTextActive]}>
-                  ☀️ Clear
+                  ☀️ Baseline
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -231,7 +248,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
                 onPress={() => setScenario('moderate')}
               >
                 <Text style={[styles.scenarioBtnText, scenario === 'moderate' && styles.scenarioBtnTextActive]}>
-                  🌧️ Rain
+                  🌧️ Flash Flood
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -239,7 +256,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
                 onPress={() => setScenario('surge')}
               >
                 <Text style={[styles.scenarioBtnText, scenario === 'surge' && styles.scenarioBtnTextActive]}>
-                  ⚡ Surge
+                  ⚡ Typhoon Surge
                 </Text>
               </TouchableOpacity>
             </View>
@@ -304,7 +321,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     color: Colors.textPrimary,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
   },
   liveBadge: {
@@ -314,6 +331,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
   },
   liveDot: {
     width: 6,
@@ -324,7 +343,7 @@ const styles = StyleSheet.create({
   },
   liveText: {
     color: '#065F46',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
   },
   gaugeCard: {
@@ -357,7 +376,7 @@ const styles = StyleSheet.create({
     lineHeight: 52,
   },
   gaugeUnit: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     color: Colors.textMuted,
   },
@@ -393,13 +412,66 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   metricLbl: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 9,
+    fontWeight: '700',
     color: Colors.textMuted,
     marginTop: 2,
+    textAlign: 'center',
+  },
+  hardwareCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: Colors.cardShadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  hardwareCardTitle: {
+    color: Colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '900',
+    marginBottom: 12,
+  },
+  hwStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  hwStatItem: {
+    flex: 1,
+  },
+  hwStatLabel: {
+    fontSize: 10,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  hwStatValue: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  dutyCycleBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.safeLight,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  dutyCycleText: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '600',
   },
   aiCard: {
-    backgroundColor: '#1E293B', // Slate 800 - dark modern aesthetic
+    backgroundColor: '#1E293B', 
     borderRadius: 24,
     padding: 20,
     marginBottom: 16,
@@ -432,6 +504,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
+  },
+  aiSubtitle: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 2,
   },
   confidenceScore: {
     color: '#10B981',
@@ -477,7 +555,7 @@ const styles = StyleSheet.create({
   },
   scenarioBtnText: {
     color: '#CBD5E1',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
   },
   scenarioBtnTextActive: {

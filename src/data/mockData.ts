@@ -8,10 +8,13 @@ export interface Node {
   status: 'normal' | 'warning' | 'critical';
   waterLevel: number; // in cm
   soc: number; // percentage 0-100
-  powerOutput: number; // in mW
+  voltage: number; // supercap voltage up to 3.3V
+  powerOutput: number; // in mW from PANI-Modified Bioanode
+  biofilmResistance: number; // in ohms (e.g., 5.5)
   signalStrength: number; // in dBm
   aiPrediction: 'LOW' | 'MEDIUM' | 'HIGH';
   lastSync: string;
+  dutyCycle: string; // e.g. '30m', '15m', '2m'
 }
 
 export interface Alert {
@@ -39,10 +42,13 @@ export const MOCK_NODES: Node[] = [
     status: 'normal',
     waterLevel: 45,
     soc: 98,
+    voltage: 3.25,
     powerOutput: 3.2,
+    biofilmResistance: 5.5,
     signalStrength: -75,
     aiPrediction: 'LOW',
     lastSync: '1m ago',
+    dutyCycle: '30m',
   },
   {
     id: 'node-05',
@@ -52,10 +58,13 @@ export const MOCK_NODES: Node[] = [
     status: 'warning',
     waterLevel: 95,
     soc: 92,
+    voltage: 3.10,
     powerOutput: 2.9,
+    biofilmResistance: 5.8,
     signalStrength: -80,
     aiPrediction: 'MEDIUM',
     lastSync: '2m ago',
+    dutyCycle: '15m',
   },
   {
     id: 'node-07',
@@ -65,10 +74,13 @@ export const MOCK_NODES: Node[] = [
     status: 'normal',
     waterLevel: 67,
     soc: 95,
+    voltage: 3.20,
     powerOutput: 3.1,
+    biofilmResistance: 5.6,
     signalStrength: -85,
     aiPrediction: 'LOW',
     lastSync: '30s ago',
+    dutyCycle: '30m',
   },
   {
     id: 'node-12',
@@ -78,10 +90,13 @@ export const MOCK_NODES: Node[] = [
     status: 'critical',
     waterLevel: 127,
     soc: 88,
+    voltage: 2.95,
     powerOutput: 2.5,
+    biofilmResistance: 6.2,
     signalStrength: -90,
     aiPrediction: 'HIGH',
     lastSync: '5m ago',
+    dutyCycle: '2m',
   },
 ];
 
@@ -90,7 +105,7 @@ export const MOCK_ALERTS: Alert[] = [
     id: 'a1',
     type: 'critical',
     title: 'CRITICAL - Node #12',
-    message: 'Water level at 127cm - EXCEEDED THRESHOLD',
+    message: 'Water level at 127cm - EXCEEDED THRESHOLD. Adaptive duty cycle shifted to 2m bursts.',
     timestamp: '2:34 PM',
     nodeId: 'node-12',
     stationName: 'Mabolo Outfall',
@@ -99,7 +114,7 @@ export const MOCK_ALERTS: Alert[] = [
     id: 'a2',
     type: 'warning',
     title: 'WARNING - Node #05',
-    message: 'Rising trend detected (+15cm/hr)',
+    message: 'Rising trend detected (+15cm/hr). LSTM model predicts high risk in 3 hours.',
     timestamp: '1:15 PM',
     nodeId: 'node-05',
     stationName: 'Triangulo Drain',
@@ -108,7 +123,7 @@ export const MOCK_ALERTS: Alert[] = [
     id: 'a3',
     type: 'info',
     title: 'INFO - Node #03',
-    message: 'Transmission resumed',
+    message: 'Supercapacitor bank fully recharged in 7.8 seconds.',
     timestamp: '12:00 PM',
     nodeId: 'node-03',
     stationName: 'Sabang Estero',
