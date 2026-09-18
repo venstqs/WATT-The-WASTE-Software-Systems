@@ -26,6 +26,10 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
   const { nodes } = useTelemetry();
   const [selectedNodeId, setSelectedNodeId] = useState<string>('node-07');
 
+  const avgSoc = Math.round(nodes.reduce((s, n) => s + n.soc, 0) / nodes.length);
+  const mostRecentSync = nodes[0]?.lastSync || 'N/A';
+  const criticalCount = nodes.filter(n => n.status === 'critical').length;
+
   const handleNodePress = (nodeId: string) => {
     setSelectedNodeId(nodeId);
     navigation.navigate('NodeDetailScreen', { nodeId });
@@ -67,7 +71,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
             </View>
             <View>
               <Text style={styles.cardLabel}>Active Nodes</Text>
-              <Text style={styles.cardValueText}>24</Text>
+              <Text style={styles.cardValueText}>{nodes.length}</Text>
             </View>
           </View>
 
@@ -77,7 +81,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
             </View>
             <View>
               <Text style={styles.cardLabel}>Grid SOC</Text>
-              <Text style={styles.cardValueText}>94%</Text>
+              <Text style={styles.cardValueText}>{avgSoc}%</Text>
             </View>
           </View>
 
@@ -87,7 +91,7 @@ export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
             </View>
             <View>
               <Text style={styles.cardLabel}>Mesh Sync</Text>
-              <Text style={styles.cardValueText}>Live</Text>
+              <Text style={styles.cardValueText}>{criticalCount > 0 ? `${criticalCount} Alert` : 'Live'}</Text>
             </View>
           </View>
         </View>

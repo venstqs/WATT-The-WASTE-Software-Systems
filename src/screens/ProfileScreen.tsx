@@ -1,13 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity, StatusBar, Share, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
+import { useAuth } from '../context/AuthContext';
+import { useTelemetry } from '../context/TelemetryContext';
+import { RootStackParamList } from '../navigation/types';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
 
 export const ProfileScreen: React.FC = () => {
-  const [aiEnabled, setAiEnabled] = React.useState(true);
+  const { user, logout } = useAuth();
+  const { isRunning, setIsRunning, autoDispatch, setAutoDispatch, esgStats, nodes } = useTelemetry();
   const [pushNotifs, setPushNotifs] = React.useState(true);
-  const [autoDispatch, setAutoDispatch] = React.useState(false);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -22,8 +28,8 @@ export const ProfileScreen: React.FC = () => {
               <Ionicons name="checkmark" size={12} color="#FFFFFF" />
             </View>
           </View>
-          <Text style={styles.userName}>Dr. Alejandro Reyes</Text>
-          <Text style={styles.userRole}>CDRRMO Operations Chief</Text>
+          <Text style={styles.userName}>{user?.name || 'Operator'}</Text>
+          <Text style={styles.userRole}>{user?.department || 'Operations'}</Text>
         </View>
 
         {/* Configuration Section */}
@@ -33,11 +39,11 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.configRow}>
             <View style={styles.configInfo}>
               <Text style={styles.configTitle}>LSTM Inference Engine</Text>
-              <Text style={styles.configSubtitle}>Real-time hydro-surge prediction</Text>
+              <Text style={styles.configSubtitle}>Real-time hydro-surge prediction (MAE: 4.2cm)</Text>
             </View>
             <Switch
-              value={aiEnabled}
-              onValueChange={setAiEnabled}
+              value={isRunning}
+              onValueChange={setIsRunning}
               trackColor={{ false: Colors.cardBorder, true: Colors.primary }}
               thumbColor="#FFFFFF"
             />
@@ -46,7 +52,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.configRow}>
             <View style={styles.configInfo}>
               <Text style={styles.configTitle}>Auto-Dispatch Sirens</Text>
-              <Text style={styles.configSubtitle}>Trigger LGU alarms automatically</Text>
+              <Text style={styles.configSubtitle}>Trigger LGU alarms automatically on CRITICAL</Text>
             </View>
             <Switch
               value={autoDispatch}
@@ -82,7 +88,21 @@ export const ProfileScreen: React.FC = () => {
             <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionRow}>
+          <TouchableOpacity style={styles.actionRow} onPress={async () => {
+            const csv = [
+              'Estero-Volt ESG Report',
+              `Generated: ${new Date().toLocaleDateString('en-PH')}`,
+              '',
+              'Metric,Value,SDG',
+              `Scope 2 Energy Offset,${esgStats.totalKwhOffset.toFixed(2)} kWh,SDG 7`,
+              `E-Waste Batteries Replaced,${esgStats.eWasteEradicated} units,SDG 12`,
+              `BOD Reduction (Bioremediation),${esgStats.bodReductionPct}%,SDG 6`,
+              `H2S Mitigation,${esgStats.h2sMitigationKg} kg,SDG 11`,
+              `Active Nodes,${nodes.length},—`,
+              `Average SOC,${esgStats.averageSoc}%,—`,
+            ].join('\n');
+            await Share.share({ message: csv, title: 'Estero-Volt ESG Report' });
+          }}>
             <View style={styles.actionIcon}>
               <Ionicons name="cloud-download" size={18} color={Colors.textLight} />
             </View>
@@ -100,7 +120,10 @@ export const ProfileScreen: React.FC = () => {
         </View>
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={() => {
+          logout();
+          navigation.reset({ index: 0, routes: [{ name: 'LoginScreen' }] });
+        }}>
           <Ionicons name="log-out-outline" size={20} color={Colors.critical} />
           <Text style={styles.logoutText}>Terminate Secure Session</Text>
         </TouchableOpacity>

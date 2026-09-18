@@ -10,6 +10,7 @@ import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { TelemetryProvider } from './src/context/TelemetryContext';
+import { AuthProvider } from './src/context/AuthContext';
 import { Colors } from './src/theme/colors';
 
 const CustomLightTheme = {
@@ -47,11 +48,13 @@ export default function App() {
             >
               {/* Screen Container without notch obstruction */}
               <View style={styles.screenInner}>
-                <TelemetryProvider>
-                  <NavigationContainer theme={CustomLightTheme}>
-                    <AppNavigator />
-                  </NavigationContainer>
-                </TelemetryProvider>
+                <AuthProvider>
+                  <TelemetryProvider>
+                    <NavigationContainer theme={CustomLightTheme}>
+                      <AppNavigator />
+                    </NavigationContainer>
+                  </TelemetryProvider>
+                </AuthProvider>
               </View>
 
               {/* Minimal Home Indicator Bar */}
@@ -62,11 +65,13 @@ export default function App() {
           </View>
         ) : (
           <View style={styles.mobileRoot}>
-            <TelemetryProvider>
-              <NavigationContainer theme={CustomLightTheme}>
-                <AppNavigator />
-              </NavigationContainer>
-            </TelemetryProvider>
+            <AuthProvider>
+              <TelemetryProvider>
+                <NavigationContainer theme={CustomLightTheme}>
+                  <AppNavigator />
+                </NavigationContainer>
+              </TelemetryProvider>
+            </AuthProvider>
           </View>
         )}
       </View>

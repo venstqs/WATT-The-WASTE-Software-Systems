@@ -1,12 +1,24 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Animated, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Animated, Text, Dimensions } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
+import { useTelemetry } from '../context/TelemetryContext';
 
 const { width } = Dimensions.get('window');
 
-const TabBarIcon = ({ isFocused, routeName, label, onPress, onLongPress }: any) => {
+interface TabBarIconProps {
+  isFocused: boolean;
+  routeName: string;
+  label: string;
+  badgeCount?: number;
+  onPress: () => void;
+  onLongPress: () => void;
+}
+
+const TabBarIcon: React.FC<TabBarIconProps> = ({
+  isFocused, routeName, label, badgeCount = 0, onPress, onLongPress
+}) => {
   const scaleAnim = useRef(new Animated.Value(isFocused ? 1.1 : 1)).current;
 
   useEffect(() => {
@@ -49,8 +61,13 @@ const TabBarIcon = ({ isFocused, routeName, label, onPress, onLongPress }: any) 
         {isFocused && (
           <Text style={styles.tabLabelActive}>{label}</Text>
         )}
-        {/* Red Badge for Alerts Tab */}
-        {routeName === 'AlertsTab' && !isFocused && (
+        {/* Live numeric badge for Alerts */}
+        {routeName === 'AlertsTab' && !isFocused && badgeCount > 0 && (
+          <View style={styles.badgeContainer}>
+            <Text style={styles.badgeText}>{badgeCount > 9 ? '9+' : badgeCount}</Text>
+          </View>
+        )}
+        {routeName === 'AlertsTab' && !isFocused && badgeCount === 0 && (
           <View style={styles.badgeIndicator} />
         )}
       </Animated.View>
@@ -59,13 +76,16 @@ const TabBarIcon = ({ isFocused, routeName, label, onPress, onLongPress }: any) 
 };
 
 export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
+  const { alerts } = useTelemetry();
+  const criticalCount = alerts.filter(a => a.type === 'critical' && !a.acknowledged).length;
+
   return (
     <View style={styles.tabBarContainer}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
           options.tabBarLabel !== undefined
-            ? options.tabBarLabel
+            ? String(options.tabBarLabel)
             : options.title !== undefined
             ? options.title
             : route.name === 'MapTab' ? 'Map'
@@ -82,17 +102,13 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
             target: route.key,
             canPreventDefault: true,
           });
-
           if (!isFocused && !event.defaultPrevented) {
             navigation.navigate(route.name);
           }
         };
 
         const onLongPress = () => {
-          navigation.emit({
-            type: 'tabLongPress',
-            target: route.key,
-          });
+          navigation.emit({ type: 'tabLongPress', target: route.key });
         };
 
         return (
@@ -103,6 +119,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, 
             label={label}
             onPress={onPress}
             onLongPress={onLongPress}
+            badgeCount={route.name === 'AlertsTab' ? criticalCount : 0}
           />
         );
       })}
@@ -156,6 +173,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     marginLeft: 4,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: Colors.critical,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
   },
   badgeIndicator: {
     position: 'absolute',

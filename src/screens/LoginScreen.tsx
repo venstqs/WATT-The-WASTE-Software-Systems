@@ -11,11 +11,13 @@ import {
   ScrollView,
   Animated,
   Easing,
+  ActivityIndicator,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
+import { useAuth } from '../context/AuthContext';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'LoginScreen'>;
 
@@ -30,12 +32,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [persona, setPersona] = useState<Persona>('CDRRMO');
+  const { login, isLoading, error } = useAuth();
 
   // Animation Values
   const fadeAnimHero = useRef(new Animated.Value(0)).current;
   const translateYHero = useRef(new Animated.Value(-30)).current;
   const fadeAnimSheet = useRef(new Animated.Value(0)).current;
   const translateYSheet = useRef(new Animated.Value(50)).current;
+  const shakeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.stagger(200, [
@@ -50,8 +54,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     ]).start();
   }, []);
 
-  const handleSignIn = () => {
-    navigation.replace('MainTabNavigator');
+  // Shake animation when error occurs
+  useEffect(() => {
+    if (error) {
+      Animated.sequence([
+        Animated.timing(shakeAnim, { toValue: 10, duration: 60, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: -10, duration: 60, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 10, duration: 60, useNativeDriver: true }),
+        Animated.timing(shakeAnim, { toValue: 0, duration: 60, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [error]);
+
+  const handleSignIn = async () => {
+    const success = await login(email, password);
+    if (success) {
+      navigation.replace('MainTabNavigator');
+    }
   };
 
   const handleQuickDemoFill = () => {
@@ -83,11 +102,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             <Text style={styles.heroTitle}>Estero-Volt</Text>
             <Text style={styles.heroSubtitle}>
-              Autonomous Bio-Electrochemical IoT Network
+              BMFC-Powered Smart Flood Monitoring Network
             </Text>
             <View style={styles.statusPill}>
               <View style={styles.statusDot} />
-              <Text style={styles.statusPillText}>EDGE-AI TELEMETRY GRID ACTIVE</Text>
+              <Text style={styles.statusPillText}>EDGE-AI TELEMETRY GRID ACTIVE • NAGA CITY</Text>
             </View>
           </Animated.View>
 
@@ -96,7 +115,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Stakeholder Portal</Text>
               <Text style={styles.sheetSubtitle}>
-                Access real-time LoRaWAN flood data and BMFC bioremediation metrics.
+                Access real-time LoRaWAN flood telemetry and BMFC bioremediation metrics.
               </Text>
             </View>
 
@@ -107,21 +126,34 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 onPress={() => { setPersona('CDRRMO'); setEmail(''); }}
               >
                 <Ionicons name="warning" size={14} color={persona === 'CDRRMO' ? '#FFFFFF' : Colors.textSecondary} />
-                <Text style={[styles.personaText, persona === 'CDRRMO' && styles.personaTextActive]}>CDRRMO (Disaster)</Text>
+                <Text style={[styles.personaText, persona === 'CDRRMO' && styles.personaTextActive]}>CDRRMO</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.personaBtn, persona === 'DENR' && styles.personaBtnActive]}
                 onPress={() => { setPersona('DENR'); setEmail(''); }}
               >
                 <Ionicons name="leaf" size={14} color={persona === 'DENR' ? '#FFFFFF' : Colors.textSecondary} />
-                <Text style={[styles.personaText, persona === 'DENR' && styles.personaTextActive]}>DENR-EMB (Water)</Text>
+                <Text style={[styles.personaText, persona === 'DENR' && styles.personaTextActive]}>DENR-EMB</Text>
               </TouchableOpacity>
             </View>
 
+            {/* Error Message */}
+            {error && (
+              <Animated.View style={[styles.errorBox, { transform: [{ translateX: shakeAnim }] }]}>
+                <Ionicons name="alert-circle" size={16} color={Colors.critical} />
+                <Text style={styles.errorText}>{error}</Text>
+              </Animated.View>
+            )}
+
             {/* Email Input */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Official Credentials</Text>
-              <View style={styles.inputWrapper}>
+              <View style={styles.inputLabelRow}>
+                <Text style={styles.inputLabel}>Official Credentials</Text>
+                <TouchableOpacity onPress={handleQuickDemoFill}>
+                  <Text style={styles.demoFillText}>Quick Fill Demo</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
                 <Ionicons
                   name="mail-outline"
                   size={18}
@@ -130,7 +162,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder={persona === 'CDRRMO' ? "ops@naga.gov.ph" : "emb@denr.gov.ph"}
+                  placeholder={persona === 'CDRRMO' ? 'disaster-ops@naga.gov.ph' : 'water-quality@emb.gov.ph'}
                   placeholderTextColor={Colors.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -142,13 +174,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Password Input */}
             <View style={styles.inputGroup}>
-              <View style={styles.inputLabelRow}>
-                <Text style={styles.inputLabel}>Security Hash</Text>
-                <TouchableOpacity onPress={handleQuickDemoFill}>
-                  <Text style={styles.demoFillText}>Quick Fill Demo</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Security Hash</Text>
+              <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
                 <Ionicons
                   name="lock-closed-outline"
                   size={18}
@@ -178,21 +205,36 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Primary Action Button */}
             <TouchableOpacity
-              style={styles.signInBtn}
+              style={[styles.signInBtn, isLoading && styles.signInBtnLoading]}
               activeOpacity={0.85}
               onPress={handleSignIn}
+              disabled={isLoading}
             >
-              <Text style={styles.signInBtnText}>Access Dashboard</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={styles.btnArrow} />
+              {isLoading ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <>
+                  <Text style={styles.signInBtnText}>Access Dashboard</Text>
+                  <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={styles.btnArrow} />
+                </>
+              )}
             </TouchableOpacity>
+
+            {/* Demo hint */}
+            <View style={styles.hintBox}>
+              <Ionicons name="information-circle-outline" size={14} color={Colors.info} />
+              <Text style={styles.hintText}>
+                Demo: tap "Quick Fill Demo" above then sign in. Password: <Text style={styles.hintPassword}>estero-volt-99</Text>
+              </Text>
+            </View>
 
             {/* Security Verification Badge */}
             <View style={styles.footerBadgeContainer}>
               <View style={styles.securityPill}>
                 <Ionicons name="shield-checkmark" size={14} color={Colors.safe} />
-                <Text style={styles.securityText}>Authorized Access Only</Text>
+                <Text style={styles.securityText}>Authorized Access Only — JA WE Challenge 2026–2027</Text>
               </View>
-              <Text style={styles.versionNote}>Estero-Volt v2.4 • Supabase Cloud Verified</Text>
+              <Text style={styles.versionNote}>Estero-Volt v2.4 • Naga City Bicol Region</Text>
             </View>
           </Animated.View>
         </ScrollView>
@@ -267,10 +309,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: Colors.safe,
     marginRight: 8,
-    shadowColor: Colors.safe,
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 0 },
   },
   statusPillText: {
     color: '#FFFFFF',
@@ -312,7 +350,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     borderRadius: 16,
     padding: 4,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   personaBtn: {
     flex: 1,
@@ -339,8 +377,26 @@ const styles = StyleSheet.create({
   personaTextActive: {
     color: '#FFFFFF',
   },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.criticalLight,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: Colors.critical,
+    fontSize: 13,
+    fontWeight: '600',
+    marginLeft: 8,
+    flex: 1,
+  },
   inputGroup: {
-    marginBottom: 18,
+    marginBottom: 16,
   },
   inputLabelRow: {
     flexDirection: 'row',
@@ -352,6 +408,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: 12,
     fontWeight: '800',
+    marginBottom: 8,
   },
   demoFillText: {
     color: Colors.primary,
@@ -372,6 +429,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     height: 54,
   },
+  inputError: {
+    borderColor: Colors.critical,
+  },
   inputIcon: {
     marginRight: 12,
   },
@@ -391,12 +451,15 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: 8,
     shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 6,
+  },
+  signInBtnLoading: {
+    opacity: 0.8,
   },
   signInBtnText: {
     color: '#FFFFFF',
@@ -407,9 +470,29 @@ const styles = StyleSheet.create({
   btnArrow: {
     marginLeft: 8,
   },
+  hintBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: Colors.infoLight,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 12,
+  },
+  hintText: {
+    color: Colors.textSecondary,
+    fontSize: 11,
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 16,
+  },
+  hintPassword: {
+    fontWeight: '800',
+    color: Colors.primary,
+  },
   footerBadgeContainer: {
     alignItems: 'center',
-    marginTop: 28,
+    marginTop: 24,
   },
   securityPill: {
     flexDirection: 'row',
@@ -421,8 +504,8 @@ const styles = StyleSheet.create({
   },
   securityText: {
     color: '#065F46',
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '700',
     marginLeft: 6,
   },
   versionNote: {

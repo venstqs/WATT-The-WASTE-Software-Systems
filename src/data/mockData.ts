@@ -25,6 +25,8 @@ export interface Alert {
   timestamp: string;
   nodeId: string;
   stationName: string;
+  acknowledged?: boolean;
+  createdAt?: number;
 }
 
 export interface WaterLevelHistory {
@@ -104,29 +106,35 @@ export const MOCK_ALERTS: Alert[] = [
   {
     id: 'a1',
     type: 'critical',
-    title: 'CRITICAL - Node #12',
-    message: 'Water level at 127cm - EXCEEDED THRESHOLD. Adaptive duty cycle shifted to 2m bursts.',
+    title: 'CRITICAL — Node #12',
+    message: 'Water level at 127cm — EXCEEDED 120cm THRESHOLD. Adaptive duty cycle shifted to 2m bursts. MLP model confidence: 96.8%.',
     timestamp: '2:34 PM',
     nodeId: 'node-12',
     stationName: 'Mabolo Outfall',
+    acknowledged: false,
+    createdAt: Date.now() - 300000,
   },
   {
     id: 'a2',
     type: 'warning',
-    title: 'WARNING - Node #05',
-    message: 'Rising trend detected (+15cm/hr). LSTM model predicts high risk in 3 hours.',
+    title: 'WARNING — Node #05',
+    message: 'Rising trend detected (+15cm/hr). LSTM model predicts HIGH risk in 3 hours. Standby pumping at Triangulo Drain.',
     timestamp: '1:15 PM',
     nodeId: 'node-05',
     stationName: 'Triangulo Drain',
+    acknowledged: false,
+    createdAt: Date.now() - 900000,
   },
   {
     id: 'a3',
     type: 'info',
-    title: 'INFO - Node #03',
-    message: 'Supercapacitor bank fully recharged in 7.8 seconds.',
+    title: 'INFO — Node #03',
+    message: 'Supercapacitor bank fully recharged in 7.8 seconds. BMFC bioanode outputting 3.2mW at 3.25V.',
     timestamp: '12:00 PM',
     nodeId: 'node-03',
     stationName: 'Sabang Estero',
+    acknowledged: true,
+    createdAt: Date.now() - 3600000,
   },
 ];
 

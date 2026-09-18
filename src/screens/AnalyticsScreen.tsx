@@ -13,11 +13,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart, LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
+import { useTelemetry } from '../context/TelemetryContext';
 
 type TimeRange = '7 Days' | '30 Days' | '90 Days';
 
 export const AnalyticsScreen: React.FC = () => {
   const [selectedRange, setSelectedRange] = useState<TimeRange>('30 Days');
+  const { esgStats, nodes } = useTelemetry();
 
   const fadeAnim1 = React.useRef(new Animated.Value(0)).current;
   const fadeAnim2 = React.useRef(new Animated.Value(0)).current;
@@ -35,24 +37,38 @@ export const AnalyticsScreen: React.FC = () => {
 
   const chartWidth = Math.min(Dimensions.get('window').width - 48, 380);
 
-  const barData = {
-    labels: ['Jun', 'Aug', 'Spt', 'Nov', 'Dec'],
-    datasets: [
-      {
-        data: [48, 67, 58, 26, 70],
-      },
-    ],
+  // Chart data changes with time range (shows different historical Bicol monsoon windows)
+  const barDataByRange = {
+    '7 Days': {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{ data: [52, 64, 48, 70, 58, 61, 55] }],
+    },
+    '30 Days': {
+      labels: ['Jun', 'Aug', 'Sep', 'Nov', 'Dec'],
+      datasets: [{ data: [48, 67, 58, 26, 70] }],
+    },
+    '90 Days': {
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      datasets: [{ data: [45, 62, 78, 55] }],
+    },
   };
+  const barData = barDataByRange[selectedRange];
 
-  const floodCurveData = {
-    labels: ['25', '50', '75', '100'],
-    datasets: [
-      {
-        data: [95, 75, 42, 22],
-        strokeWidth: 3,
-      },
-    ],
+  const floodCurveDataByRange = {
+    '7 Days': {
+      labels: ['Day1', 'Day3', 'Day5', 'Day7'],
+      datasets: [{ data: [90, 72, 55, 38], strokeWidth: 3 }],
+    },
+    '30 Days': {
+      labels: ['25', '50', '75', '100'],
+      datasets: [{ data: [95, 75, 42, 22], strokeWidth: 3 }],
+    },
+    '90 Days': {
+      labels: ['Wk1', 'Wk4', 'Wk8', 'Wk12'],
+      datasets: [{ data: [98, 80, 55, 30], strokeWidth: 3 }],
+    },
   };
+  const floodCurveData = floodCurveDataByRange[selectedRange];
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -107,8 +123,8 @@ export const AnalyticsScreen: React.FC = () => {
               <View style={styles.iconCircleWhite}>
                 <Ionicons name="flash" size={16} color={Colors.primary} />
               </View>
-              <Text style={styles.statsValueWhite}>2.4 kWh</Text>
-              <Text style={styles.statsLabelWhite}>Scope 2 Offset</Text>
+              <Text style={styles.statsValueWhite}>{esgStats.totalKwhOffset.toFixed(1)} kWh</Text>
+              <Text style={styles.statsLabelWhite}>Scope 2 Offset (SDG 7)</Text>
             </Animated.View>
 
             {/* Box 2 - SDG 12 */}
@@ -116,8 +132,8 @@ export const AnalyticsScreen: React.FC = () => {
               <View style={[styles.iconCircleColor, { backgroundColor: Colors.safeLight }]}>
                 <Ionicons name="battery-dead" size={16} color={Colors.safe} />
               </View>
-              <Text style={styles.statsValueColor}>144</Text>
-              <Text style={styles.statsLabelColor}>E-Waste Eradicated</Text>
+              <Text style={styles.statsValueColor}>{esgStats.eWasteEradicated}</Text>
+              <Text style={styles.statsLabelColor}>E-Waste Batteries Replaced</Text>
             </Animated.View>
           </View>
 
@@ -127,7 +143,7 @@ export const AnalyticsScreen: React.FC = () => {
               <View style={[styles.iconCircleColor, { backgroundColor: Colors.infoLight }]}>
                 <Ionicons name="water" size={16} color={Colors.info} />
               </View>
-              <Text style={styles.statsValueColor}>78%</Text>
+              <Text style={styles.statsValueColor}>{esgStats.bodReductionPct}%</Text>
               <Text style={styles.statsLabelColor}>BOD Drop (Bioremediation)</Text>
             </Animated.View>
 
@@ -136,8 +152,8 @@ export const AnalyticsScreen: React.FC = () => {
               <View style={[styles.iconCircleColor, { backgroundColor: '#F1F5F9' }]}>
                 <Ionicons name="cloud-offline" size={16} color={Colors.primary} />
               </View>
-              <Text style={styles.statsValueColor}>1.8 kg</Text>
-              <Text style={styles.statsLabelColor}>H₂S Mitigation</Text>
+              <Text style={styles.statsValueColor}>{esgStats.h2sMitigationKg} kg</Text>
+              <Text style={styles.statsLabelColor}>H₂S Mitigation (SDG 11)</Text>
             </Animated.View>
           </View>
         </View>
