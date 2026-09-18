@@ -7,8 +7,10 @@ export type MapStackParamList = {
 
 export type MainTabParamList = {
   MapTab: NavigatorScreenParams<MapStackParamList>;
+  NetworkTab: undefined;
   AlertsTab: undefined;
   AnalyticsTab: undefined;
+  ProfileTab: undefined;
 };
 
 export type RootStackParamList = {
