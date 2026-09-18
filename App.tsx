@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { TelemetryProvider } from './src/context/TelemetryContext';
 import { Colors } from './src/theme/colors';
 
 const CustomLightTheme = {
@@ -46,9 +47,11 @@ export default function App() {
             >
               {/* Screen Container without notch obstruction */}
               <View style={styles.screenInner}>
-                <NavigationContainer theme={CustomLightTheme}>
-                  <AppNavigator />
-                </NavigationContainer>
+                <TelemetryProvider>
+                  <NavigationContainer theme={CustomLightTheme}>
+                    <AppNavigator />
+                  </NavigationContainer>
+                </TelemetryProvider>
               </View>
 
               {/* Minimal Home Indicator Bar */}
@@ -59,9 +62,11 @@ export default function App() {
           </View>
         ) : (
           <View style={styles.mobileRoot}>
-            <NavigationContainer theme={CustomLightTheme}>
-              <AppNavigator />
-            </NavigationContainer>
+            <TelemetryProvider>
+              <NavigationContainer theme={CustomLightTheme}>
+                <AppNavigator />
+              </NavigationContainer>
+            </TelemetryProvider>
           </View>
         )}
       </View>

@@ -11,7 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
-import { MOCK_NODES, Node } from '../data/mockData';
+import { Node } from '../data/mockData';
+import { useTelemetry } from '../context/TelemetryContext';
 import { GisMapView, getMarkerColor } from '../components/GisMapView';
 import { MapStackParamList } from '../navigation/types';
 
@@ -22,7 +23,7 @@ interface MapScreenProps {
 }
 
 export const MapScreen: React.FC<MapScreenProps> = ({ navigation }) => {
-  const [nodes] = useState<Node[]>(MOCK_NODES);
+  const { nodes } = useTelemetry();
   const [selectedNodeId, setSelectedNodeId] = useState<string>('node-07');
 
   const handleNodePress = (nodeId: string) => {

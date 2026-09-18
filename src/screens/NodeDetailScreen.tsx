@@ -17,12 +17,12 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Colors } from '../theme/colors';
 import {
-  MOCK_NODES,
   NODE_CHART_DATA_MAP,
   MOCK_CHART_DATA,
   Node,
   WaterLevelHistory,
 } from '../data/mockData';
+import { useTelemetry } from '../context/TelemetryContext';
 import { MapStackParamList } from '../navigation/types';
 import { predictEsteroLevel } from '../ai/hydrologyModel';
 
@@ -42,9 +42,23 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
 }) => {
   const nodeId = route?.params?.nodeId || 'node-07';
 
-  const defaultNode: Node =
-    MOCK_NODES.find((n) => n.id === nodeId) ||
-    MOCK_NODES[2];
+  const { getNodeById } = useTelemetry();
+  const defaultNode: Node = getNodeById(nodeId) || getNodeById('node-07') || {
+    id: nodeId,
+    name: 'Estero Node',
+    lat: 13.6264,
+    lng: 123.1833,
+    waterLevel: 45,
+    status: 'normal',
+    soc: 90,
+    voltage: 3.3,
+    powerOutput: 150,
+    biofilmResistance: 5.0,
+    signalStrength: -70,
+    aiPrediction: 'LOW',
+    lastSync: 'Just now',
+    dutyCycle: '30m'
+  };
 
   const [scenario, setScenario] = useState<ScenarioMode>('baseline');
 

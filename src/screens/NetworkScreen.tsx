@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../theme/colors';
-import { MOCK_NODES } from '../data/mockData';
+import { useTelemetry } from '../context/TelemetryContext';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
@@ -17,6 +17,7 @@ type NetworkNavigationProp = CompositeNavigationProp<
 
 export const NetworkScreen: React.FC = () => {
   const navigation = useNavigation<NetworkNavigationProp>();
+  const { nodes } = useTelemetry();
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -29,7 +30,7 @@ export const NetworkScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>{MOCK_NODES.length}</Text>
+            <Text style={styles.statValue}>{nodes.length}</Text>
             <Text style={styles.statLabel}>Active Nodes</Text>
           </View>
           <View style={styles.statBox}>
@@ -40,7 +41,7 @@ export const NetworkScreen: React.FC = () => {
 
         <Text style={styles.sectionTitle}>Deployed Sensors</Text>
         
-        {MOCK_NODES.map((node) => {
+        {nodes.map((node) => {
           const isWarning = node.status === 'warning';
           const isCritical = node.status === 'critical';
           

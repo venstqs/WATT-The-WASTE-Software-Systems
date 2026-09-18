@@ -1,13 +1,6 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  Animated,
-} from 'react-native';
-import MapView, { Marker, UrlTile, PROVIDER_DEFAULT } from 'react-native-maps';
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, Platform, Text } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { Colors } from '../theme/colors';
 import { Node } from '../data/mockData';
 
@@ -28,92 +21,168 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
   onSelectNode,
   selectedNodeId,
 }) => {
-  const pulseAnim = React.useRef(new Animated.Value(0)).current;
+  const webViewRef = useRef<WebView>(null);
 
-  React.useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
+  // When nodes or selection change, we push the data into the WebView
+  useEffect(() => {
+    if (webViewRef.current) {
+      const data = {
+        type: 'UPDATE_NODES',
+        nodes: nodes.map(n => ({
+          id: n.id,
+          lat: n.lat,
+          lng: n.lng,
+          color: getMarkerColor(n.waterLevel),
+          isSelected: n.id === selectedNodeId
+        }))
+      };
+      // Inject javascript to call our global function inside the WebView
+      webViewRef.current.injectJavaScript(`
+        if (window.updateMarkers) {
+          window.updateMarkers(${JSON.stringify(data.nodes)});
+        }
+        true;
+      `);
+    }
+  }, [nodes, selectedNodeId]);
 
-  // Center of Naga City Bicol River approximately
-  const initialRegion = {
-    latitude: 13.6264,
-    longitude: 123.1833,
-    latitudeDelta: 0.04,
-    longitudeDelta: 0.04,
+  const onMessage = (event: any) => {
+    try {
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'NODE_CLICKED') {
+        onSelectNode(data.nodeId);
+      }
+    } catch (e) {
+      // ignore
+    }
   };
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body { margin: 0; padding: 0; background: #E5E7EB; }
+          #map { width: 100vw; height: 100vh; }
+          
+          .custom-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .inner-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            z-index: 10;
+          }
+          
+          .ping-ring {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid;
+            opacity: 0.6;
+            animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+          }
+          
+          @keyframes ping {
+            75%, 100% {
+              transform: scale(2.5);
+              opacity: 0;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          var map = L.map('map', {
+            zoomControl: false,
+            attributionControl: false
+          }).setView([13.6264, 123.1833], 14);
+          
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19
+          }).addTo(map);
+
+          var markers = {};
+
+          function createMarkerIcon(node) {
+            var html = '<div class="custom-marker">' +
+                         '<div class="inner-dot" style="background-color: ' + node.color + '"></div>';
+                         
+            if (node.isSelected) {
+              html += '<div class="ping-ring" style="border-color: ' + node.color + '"></div>';
+            }
+            
+            html += '</div>';
+
+            return L.divIcon({
+              html: html,
+              className: '',
+              iconSize: [24, 24],
+              iconAnchor: [12, 12]
+            });
+          }
+
+          window.updateMarkers = function(nodes) {
+            // Remove old markers
+            for (var id in markers) {
+              map.removeLayer(markers[id]);
+            }
+            markers = {};
+
+            // Add new markers
+            nodes.forEach(function(node) {
+              var marker = L.marker([node.lat, node.lng], {
+                icon: createMarkerIcon(node)
+              }).addTo(map);
+              
+              marker.on('click', function() {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'NODE_CLICKED',
+                  nodeId: node.id
+                }));
+              });
+              
+              markers[node.id] = marker;
+            });
+          };
+        </script>
+      </body>
+    </html>
+  `;
+
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.webContainer}>
+        <Text style={{ textAlign: 'center', padding: 20 }}>
+          WebView Leaflet map is not supported on Expo Web preview. Please view on Android/iOS device.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.webContainer}>
-      <View style={styles.osmHeader}>
-        <View style={styles.osmBadgeRow}>
-          <View style={styles.osmLogoDot} />
-          <Text style={styles.osmTitle}>OPENSTREETMAP • NAGA BASIN RADAR</Text>
-        </View>
-        <Text style={styles.osmCoord}>13.6218° N, 123.1948° E</Text>
-      </View>
-
       <View style={styles.container}>
-        <MapView
+        <WebView
+          ref={webViewRef}
+          source={{ html: htmlContent }}
           style={styles.map}
-          initialRegion={initialRegion}
-          provider={Platform.OS === 'web' ? undefined : PROVIDER_DEFAULT}
-          mapType="none" // we use UrlTile instead of default Apple/Google map tiles
-        >
-          <UrlTile
-            urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-            flipY={false}
-          />
-          {nodes.map((node) => {
-            const pinColor = getMarkerColor(node.waterLevel);
-            const isSelected = selectedNodeId === node.id;
-            
-            return (
-              <Marker
-                key={node.id}
-                coordinate={{ latitude: node.lat, longitude: node.lng }}
-                onPress={() => onSelectNode(node.id)}
-              >
-                <View style={styles.pinIndicatorContainer}>
-                  <View style={[styles.innerPinDot, { backgroundColor: pinColor }]} />
-                  {isSelected && (
-                    <Animated.View 
-                      style={[
-                        styles.pingRing, 
-                        { 
-                          borderColor: pinColor,
-                          transform: [{
-                            scale: pulseAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [1, 2.5]
-                            })
-                          }],
-                          opacity: pulseAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0.8, 0]
-                          })
-                        }
-                      ]} 
-                    />
-                  )}
-                </View>
-              </Marker>
-            );
-          })}
-        </MapView>
+          scrollEnabled={false}
+          bounces={false}
+          onMessage={onMessage}
+          originWhitelist={['*']}
+          javaScriptEnabled={true}
+        />
       </View>
     </View>
   );
@@ -124,7 +193,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Colors.cardBorder,
     padding: 12,
     marginHorizontal: 16,
     marginBottom: 16,
@@ -133,35 +202,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 12,
     elevation: 4,
-  },
-  osmHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-    paddingHorizontal: 6,
-  },
-  osmBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  osmLogoDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.safe,
-    marginRight: 6,
-  },
-  osmTitle: {
-    color: Colors.textSecondary,
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  osmCoord: {
-    color: Colors.textMuted,
-    fontSize: 9,
-    fontWeight: '700',
   },
   container: {
     width: '100%',
@@ -172,27 +212,6 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
-  },
-  pinIndicatorContainer: {
-    position: 'relative',
-    width: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  innerPinDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  pingRing: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    opacity: 0.6,
+    backgroundColor: '#E5E7EB',
   },
 });
