@@ -5,6 +5,7 @@ export type MapStackParamList = {
   NodeDetailScreen: { nodeId?: string };
 };
 
+// LGU (Admin) tab navigator — full access
 export type MainTabParamList = {
   MapTab: NavigatorScreenParams<MapStackParamList>;
   NetworkTab: undefined;
@@ -13,7 +14,16 @@ export type MainTabParamList = {
   ProfileTab: undefined;
 };
 
+// Citizen tab navigator — simplified public access
+export type CitizenTabParamList = {
+  CitizenHomeTab: undefined;
+  CitizenMapTab: undefined;
+  CitizenAlertsTab: undefined;
+  CitizenHotlinesTab: undefined;
+};
+
 export type RootStackParamList = {
   LoginScreen: undefined;
   MainTabNavigator: NavigatorScreenParams<MainTabParamList> | undefined;
+  CitizenNavigator: NavigatorScreenParams<CitizenTabParamList> | undefined;
 };

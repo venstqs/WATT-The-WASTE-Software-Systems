@@ -25,14 +25,15 @@ interface LoginScreenProps {
   navigation: LoginScreenNavigationProp;
 }
 
-type Persona = 'CDRRMO' | 'DENR';
+type AccessMode = 'LGU' | 'CITIZEN';
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [persona, setPersona] = useState<Persona>('CDRRMO');
-  const { login, isLoading, error } = useAuth();
+  const [accessMode, setAccessMode] = useState<AccessMode>('LGU');
+  const [citizenName, setCitizenName] = useState('');
+  const { login, loginAsCitizen, isLoading, error } = useAuth();
 
   // Animation Values
   const fadeAnimHero = useRef(new Animated.Value(0)).current;
@@ -67,6 +68,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   }, [error]);
 
   const handleSignIn = async () => {
+    if (accessMode === 'CITIZEN') {
+      loginAsCitizen(citizenName);
+      navigation.replace('CitizenNavigator');
+      return;
+    }
     const success = await login(email, password);
     if (success) {
       navigation.replace('MainTabNavigator');
@@ -74,11 +80,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   const handleQuickDemoFill = () => {
-    if (persona === 'CDRRMO') {
-      setEmail('disaster-ops@naga.gov.ph');
-    } else {
-      setEmail('water-quality@emb.gov.ph');
-    }
+    setEmail('disaster-ops@naga.gov.ph');
     setPassword('estero-volt-99');
   };
 
@@ -119,24 +121,44 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               </Text>
             </View>
 
-            {/* Persona Toggle */}
+            {/* Access Mode Toggle */}
             <View style={styles.personaToggleContainer}>
               <TouchableOpacity
-                style={[styles.personaBtn, persona === 'CDRRMO' && styles.personaBtnActive]}
-                onPress={() => { setPersona('CDRRMO'); setEmail(''); }}
+                style={[styles.personaBtn, accessMode === 'LGU' && styles.personaBtnActive]}
+                onPress={() => { setAccessMode('LGU'); }}
               >
-                <Ionicons name="warning" size={14} color={persona === 'CDRRMO' ? '#FFFFFF' : Colors.textSecondary} />
-                <Text style={[styles.personaText, persona === 'CDRRMO' && styles.personaTextActive]}>CDRRMO</Text>
+                <Ionicons name="shield" size={14} color={accessMode === 'LGU' ? '#FFFFFF' : Colors.textSecondary} />
+                <Text style={[styles.personaText, accessMode === 'LGU' && styles.personaTextActive]}>LGU Officer</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.personaBtn, persona === 'DENR' && styles.personaBtnActive]}
-                onPress={() => { setPersona('DENR'); setEmail(''); }}
+                style={[styles.personaBtn, accessMode === 'CITIZEN' && styles.personaBtnActive]}
+                onPress={() => { setAccessMode('CITIZEN'); }}
               >
-                <Ionicons name="leaf" size={14} color={persona === 'DENR' ? '#FFFFFF' : Colors.textSecondary} />
-                <Text style={[styles.personaText, persona === 'DENR' && styles.personaTextActive]}>DENR-EMB</Text>
+                <Ionicons name="people" size={14} color={accessMode === 'CITIZEN' ? '#FFFFFF' : Colors.textSecondary} />
+                <Text style={[styles.personaText, accessMode === 'CITIZEN' && styles.personaTextActive]}>Citizen</Text>
               </TouchableOpacity>
             </View>
 
+            {/* Citizen Mode: just name input */}
+            {accessMode === 'CITIZEN' ? (
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Your Name (Optional)</Text>
+                <View style={styles.inputWrapper}>
+                  <Ionicons name="person-outline" size={18} color={Colors.primary} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="e.g. Juan dela Cruz"
+                    placeholderTextColor={Colors.textMuted}
+                    value={citizenName}
+                    onChangeText={setCitizenName}
+                  />
+                </View>
+                <Text style={styles.citizenNote}>
+                  Citizen access is free and open. You'll see live flood levels and emergency alerts for Naga City.
+                </Text>
+              </View>
+            ) : (
+              <>
             {/* Error Message */}
             {error && (
               <Animated.View style={[styles.errorBox, { transform: [{ translateX: shakeAnim }] }]}>
@@ -148,21 +170,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Email Input */}
             <View style={styles.inputGroup}>
               <View style={styles.inputLabelRow}>
-                <Text style={styles.inputLabel}>Official Credentials</Text>
+                <Text style={styles.inputLabel}>LGU Credentials</Text>
                 <TouchableOpacity onPress={handleQuickDemoFill}>
                   <Text style={styles.demoFillText}>Quick Fill Demo</Text>
                 </TouchableOpacity>
               </View>
               <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
-                <Ionicons
-                  name="mail-outline"
-                  size={18}
-                  color={Colors.primary}
-                  style={styles.inputIcon}
-                />
+                <Ionicons name="mail-outline" size={18} color={Colors.primary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder={persona === 'CDRRMO' ? 'disaster-ops@naga.gov.ph' : 'water-quality@emb.gov.ph'}
+                  placeholder="ops@naga.gov.ph"
                   placeholderTextColor={Colors.textMuted}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -174,14 +191,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Password Input */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Security Hash</Text>
+              <Text style={styles.inputLabel}>Password</Text>
               <View style={[styles.inputWrapper, error ? styles.inputError : null]}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={18}
-                  color={Colors.primary}
-                  style={styles.inputIcon}
-                />
+                <Ionicons name="lock-closed-outline" size={18} color={Colors.primary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="••••••••••••"
@@ -190,20 +202,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   value={password}
                   onChangeText={setPassword}
                 />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeBtn}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                    size={18}
-                    color={Colors.textSecondary}
-                  />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                  <Ionicons name={showPassword ? 'eye-outline' : 'eye-off-outline'} size={18} color={Colors.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
+            </>
+            )}
 
-            {/* Primary Action Button */}
             <TouchableOpacity
               style={[styles.signInBtn, isLoading && styles.signInBtnLoading]}
               activeOpacity={0.85}
@@ -214,27 +220,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
                 <>
-                  <Text style={styles.signInBtnText}>Access Dashboard</Text>
+                  <Text style={styles.signInBtnText}>
+                    {accessMode === 'CITIZEN' ? 'View Flood Status' : 'Access Dashboard'}
+                  </Text>
                   <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={styles.btnArrow} />
                 </>
               )}
             </TouchableOpacity>
 
-            {/* Demo hint */}
-            <View style={styles.hintBox}>
-              <Ionicons name="information-circle-outline" size={14} color={Colors.info} />
-              <Text style={styles.hintText}>
-                Demo: tap "Quick Fill Demo" above then sign in. Password: <Text style={styles.hintPassword}>estero-volt-99</Text>
-              </Text>
-            </View>
+            {/* Hint box - only for LGU */}
+            {accessMode === 'LGU' && (
+              <View style={styles.hintBox}>
+                <Ionicons name="information-circle-outline" size={14} color={Colors.info} />
+                <Text style={styles.hintText}>
+                  Demo: tap "Quick Fill Demo" then sign in. Password: <Text style={styles.hintPassword}>estero-volt-99</Text>
+                </Text>
+              </View>
+            )}
 
             {/* Security Verification Badge */}
             <View style={styles.footerBadgeContainer}>
               <View style={styles.securityPill}>
                 <Ionicons name="shield-checkmark" size={14} color={Colors.safe} />
-                <Text style={styles.securityText}>Authorized Access Only — JA WE Challenge 2026–2027</Text>
+                <Text style={styles.securityText}>Authorized Access Only</Text>
               </View>
-              <Text style={styles.versionNote}>Estero-Volt v2.4 • Naga City Bicol Region</Text>
+              <Text style={styles.versionNote}>Estero-Volt v2.4 • Naga City, Bicol Region</Text>
             </View>
           </Animated.View>
         </ScrollView>
@@ -513,5 +523,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
     marginTop: 8,
+  },
+  citizenNote: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 10,
+    lineHeight: 18,
+    fontWeight: '500',
   },
 });
