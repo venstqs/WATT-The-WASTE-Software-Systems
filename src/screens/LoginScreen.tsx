@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +30,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [persona, setPersona] = useState<Persona>('CDRRMO');
+
+  // Animation Values
+  const fadeAnimHero = useRef(new Animated.Value(0)).current;
+  const translateYHero = useRef(new Animated.Value(-30)).current;
+  const fadeAnimSheet = useRef(new Animated.Value(0)).current;
+  const translateYSheet = useRef(new Animated.Value(50)).current;
+
+  useEffect(() => {
+    Animated.stagger(200, [
+      Animated.parallel([
+        Animated.timing(fadeAnimHero, { toValue: 1, duration: 600, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(translateYHero, { toValue: 0, duration: 600, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      ]),
+      Animated.parallel([
+        Animated.timing(fadeAnimSheet, { toValue: 1, duration: 600, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(translateYSheet, { toValue: 0, duration: 600, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, []);
 
   const handleSignIn = () => {
     navigation.replace('MainTabNavigator');
@@ -55,7 +76,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           bounces={false}
         >
           {/* Deep Corporate Royal Blue Hero Banner */}
-          <View style={styles.heroHeader}>
+          <Animated.View style={[styles.heroHeader, { opacity: fadeAnimHero, transform: [{ translateY: translateYHero }] }]}>
             <View style={styles.crestBadge}>
               <Ionicons name="water" size={32} color={Colors.primary} />
             </View>
@@ -68,10 +89,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               <View style={styles.statusDot} />
               <Text style={styles.statusPillText}>EDGE-AI TELEMETRY GRID ACTIVE</Text>
             </View>
-          </View>
+          </Animated.View>
 
           {/* Floating Form Content Sheet */}
-          <View style={styles.sheetContainer}>
+          <Animated.View style={[styles.sheetContainer, { opacity: fadeAnimSheet, transform: [{ translateY: translateYSheet }] }]}>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Stakeholder Portal</Text>
               <Text style={styles.sheetSubtitle}>
@@ -173,7 +194,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               </View>
               <Text style={styles.versionNote}>Estero-Volt v2.4 • Supabase Cloud Verified</Text>
             </View>
-          </View>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

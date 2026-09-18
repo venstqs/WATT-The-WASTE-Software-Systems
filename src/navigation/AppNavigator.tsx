@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, View, Text, Animated, Easing } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
@@ -61,8 +61,23 @@ const MainTabNavigator: React.FC = () => {
             iconName = focused ? 'stats-chart' : 'stats-chart-outline';
           }
 
+          const scaleAnim = useRef(new Animated.Value(focused ? 1.1 : 1)).current;
+          
+          useEffect(() => {
+            Animated.spring(scaleAnim, {
+              toValue: focused ? 1.05 : 1,
+              friction: 5,
+              tension: 100,
+              useNativeDriver: true,
+            }).start();
+          }, [focused]);
+
           return (
-            <View style={[styles.tabIconContainer, focused && styles.tabIconContainerActive]}>
+            <Animated.View style={[
+              styles.tabIconContainer, 
+              focused && styles.tabIconContainerActive,
+              { transform: [{ scale: scaleAnim }] }
+            ]}>
               <Ionicons
                 name={iconName}
                 size={focused ? 20 : 22}
@@ -77,7 +92,7 @@ const MainTabNavigator: React.FC = () => {
               {route.name === 'AlertsTab' && !focused && (
                 <View style={styles.badgeIndicator} />
               )}
-            </View>
+            </Animated.View>
           );
         },
       })}

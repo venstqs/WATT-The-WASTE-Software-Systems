@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
+  Animated,
 } from 'react-native';
 import Svg, { Rect, Path, Text as SvgText, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Colors } from '../theme/colors';
@@ -27,6 +28,25 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
   onSelectNode,
   selectedNodeId,
 }) => {
+  const pulseAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
   // Use scaled coordinates for web/fallback
   const nodeCoords: Record<string, { x: number; y: number }> = {
     'node-03': { x: 80, y: 80 },   
@@ -144,7 +164,26 @@ export const GisMapView: React.FC<GisMapViewProps> = ({
             >
               <View style={styles.pinIndicatorContainer}>
                 <View style={[styles.innerPinDot, { backgroundColor: pinColor }]} />
-                {isSelected && <View style={[styles.pingRing, { borderColor: pinColor }]} />}
+                {isSelected && (
+                  <Animated.View 
+                    style={[
+                      styles.pingRing, 
+                      { 
+                        borderColor: pinColor,
+                        transform: [{
+                          scale: pulseAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [1, 2.5]
+                          })
+                        }],
+                        opacity: pulseAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.8, 0]
+                        })
+                      }
+                    ]} 
+                  />
+                )}
               </View>
               <View style={styles.pinContent}>
                 <Text style={styles.pinNameText} numberOfLines={1}>{shortName}</Text>

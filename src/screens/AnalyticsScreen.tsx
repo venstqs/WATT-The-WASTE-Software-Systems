@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart, LineChart } from 'react-native-chart-kit';
@@ -17,6 +18,20 @@ type TimeRange = '7 Days' | '30 Days' | '90 Days';
 
 export const AnalyticsScreen: React.FC = () => {
   const [selectedRange, setSelectedRange] = useState<TimeRange>('30 Days');
+
+  const fadeAnim1 = React.useRef(new Animated.Value(0)).current;
+  const fadeAnim2 = React.useRef(new Animated.Value(0)).current;
+  const fadeAnim3 = React.useRef(new Animated.Value(0)).current;
+  const fadeAnim4 = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.stagger(100, [
+      Animated.timing(fadeAnim1, { toValue: 1, duration: 400, useNativeDriver: true }),
+      Animated.timing(fadeAnim2, { toValue: 1, duration: 400, useNativeDriver: true }),
+      Animated.timing(fadeAnim3, { toValue: 1, duration: 400, useNativeDriver: true }),
+      Animated.timing(fadeAnim4, { toValue: 1, duration: 400, useNativeDriver: true }),
+    ]).start();
+  }, []);
 
   const chartWidth = Math.min(Dimensions.get('window').width - 48, 380);
 
@@ -88,42 +103,42 @@ export const AnalyticsScreen: React.FC = () => {
         <View style={styles.statsGrid}>
           <View style={styles.statsRow}>
             {/* Box 1 - SDG 7 */}
-            <View style={[styles.statsBox, { backgroundColor: Colors.primary }]}>
+            <Animated.View style={[styles.statsBox, { backgroundColor: Colors.primary, opacity: fadeAnim1, transform: [{ scale: fadeAnim1.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }]}>
               <View style={styles.iconCircleWhite}>
                 <Ionicons name="flash" size={16} color={Colors.primary} />
               </View>
               <Text style={styles.statsValueWhite}>2.4 kWh</Text>
               <Text style={styles.statsLabelWhite}>Scope 2 Offset</Text>
-            </View>
+            </Animated.View>
 
             {/* Box 2 - SDG 12 */}
-            <View style={styles.statsBox}>
+            <Animated.View style={[styles.statsBox, { opacity: fadeAnim2, transform: [{ scale: fadeAnim2.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }]}>
               <View style={[styles.iconCircleColor, { backgroundColor: Colors.safeLight }]}>
                 <Ionicons name="battery-dead" size={16} color={Colors.safe} />
               </View>
               <Text style={styles.statsValueColor}>144</Text>
               <Text style={styles.statsLabelColor}>E-Waste Eradicated</Text>
-            </View>
+            </Animated.View>
           </View>
 
           <View style={styles.statsRow}>
             {/* Box 3 - SDG 6 */}
-            <View style={styles.statsBox}>
+            <Animated.View style={[styles.statsBox, { opacity: fadeAnim3, transform: [{ scale: fadeAnim3.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }]}>
               <View style={[styles.iconCircleColor, { backgroundColor: Colors.infoLight }]}>
                 <Ionicons name="water" size={16} color={Colors.info} />
               </View>
               <Text style={styles.statsValueColor}>78%</Text>
               <Text style={styles.statsLabelColor}>BOD Drop (Bioremediation)</Text>
-            </View>
+            </Animated.View>
 
             {/* Box 4 - Health & Bio-Gas Mitigation */}
-            <View style={styles.statsBox}>
+            <Animated.View style={[styles.statsBox, { opacity: fadeAnim4, transform: [{ scale: fadeAnim4.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }) }] }]}>
               <View style={[styles.iconCircleColor, { backgroundColor: '#F1F5F9' }]}>
                 <Ionicons name="cloud-offline" size={16} color={Colors.primary} />
               </View>
               <Text style={styles.statsValueColor}>1.8 kg</Text>
               <Text style={styles.statsLabelColor}>H₂S Mitigation</Text>
-            </View>
+            </Animated.View>
           </View>
         </View>
 

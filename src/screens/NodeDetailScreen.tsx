@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp } from '@react-navigation/native';
@@ -108,6 +109,25 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
   const riskStyle = getRiskStyle(liveInference.riskLevel);
   const gaugePercent = Math.min(100, Math.max(0, (liveInference.predictedWaterLevel / 150) * 100));
 
+  const scaleAnim = React.useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
@@ -135,7 +155,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
         </View>
 
         {/* High-Tech Radial Telemetry Gauge */}
-        <View style={styles.gaugeCard}>
+        <Animated.View style={[styles.gaugeCard, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
           <View style={styles.gaugeWrapper}>
             <Svg width={220} height={150} viewBox="0 0 220 150">
               <Defs>
@@ -188,7 +208,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
               <Text style={styles.metricLbl}>PANI-Bioanode</Text>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Hardware & Power Management Card */}
         <View style={styles.hardwareCard}>
