@@ -17,8 +17,9 @@ export function predictEsteroLevel(
   rain_t0: number, // current rainfall (mm)
   baselineLevel = 50
 ): ModelPrediction {
-  // Edge-AI MLP regression mapping matching edge_ai_prediction_graph.py
-  const lagSpike = rain_t1 * 2.45 + rain_t2 * 1.52 + rain_t0 * 0.85;
+  // Edge-AI MLP regression mapping precisely matching edge_ai_prediction_graph.py
+  // baseline (50) + t1 (1h lag) * 2.5 + t2 (2h lag) * 1.5
+  const lagSpike = rain_t1 * 2.5 + rain_t2 * 1.5;
   const rawPredicted = baselineLevel + lagSpike;
   const predicted = Math.max(20, Math.min(150, Math.round(rawPredicted * 10) / 10));
 

@@ -10,6 +10,7 @@ import {
   StatusBar,
   Animated,
   Linking,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -88,7 +89,11 @@ export const CitizenDashboardScreen: React.FC = () => {
             <Text style={styles.subtitle}>Naga City Estero Flood Status</Text>
           </View>
           <View style={styles.logoMark}>
-            <Ionicons name="water" size={20} color={Colors.primary} />
+            <Image 
+              source={require('../../assets/branding/estero-volt-logo.jpg')}
+              style={styles.logoImage}
+              resizeMode="cover"
+            />
           </View>
         </Animated.View>
 
@@ -252,9 +257,19 @@ const styles = StyleSheet.create({
   greeting: { fontSize: 22, fontWeight: '900', color: Colors.textPrimary },
   subtitle: { fontSize: 12, color: Colors.textSecondary, marginTop: 2, fontWeight: '600' },
   logoMark: {
-    width: 40, height: 40, borderRadius: 14,
+    width: 44, height: 44, borderRadius: 12,
     backgroundColor: Colors.primaryLight,
     alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
 
   // Main status card

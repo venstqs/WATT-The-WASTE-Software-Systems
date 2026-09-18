@@ -12,6 +12,7 @@ import {
   Animated,
   Easing,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -99,7 +100,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           {/* Deep Corporate Royal Blue Hero Banner */}
           <Animated.View style={[styles.heroHeader, { opacity: fadeAnimHero, transform: [{ translateY: translateYHero }] }]}>
             <View style={styles.crestBadge}>
-              <Ionicons name="water" size={32} color={Colors.primary} />
+              <Image 
+                source={require('../../assets/branding/estero-volt-logo.jpg')}
+                style={styles.logoImage}
+                resizeMode="cover"
+              />
             </View>
 
             <Text style={styles.heroTitle}>Estero-Volt</Text>
@@ -287,6 +292,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 8,
+    overflow: 'hidden',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
   heroTitle: {
     color: '#FFFFFF',
