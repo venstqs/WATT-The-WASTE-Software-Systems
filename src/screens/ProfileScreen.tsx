@@ -38,7 +38,7 @@ export const ProfileScreen: React.FC = () => {
           
           <View style={styles.configRow}>
             <View style={styles.configInfo}>
-              <Text style={styles.configTitle}>LSTM Inference Engine</Text>
+              <Text style={styles.configTitle}>MLP Inference Engine</Text>
               <Text style={styles.configSubtitle}>Real-time hydro-surge prediction (MAE: 4.2cm)</Text>
             </View>
             <Switch

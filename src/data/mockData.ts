@@ -1,4 +1,6 @@
 // src/data/mockData.ts
+// Estero-Volt — BMFC Sensor Network — Naga City, Bicol
+// Node positions matched to actual Naga City estero geography
 
 export interface Node {
   id: string;
@@ -6,15 +8,15 @@ export interface Node {
   lat: number;
   lng: number;
   status: 'normal' | 'warning' | 'critical';
-  waterLevel: number; // in cm
-  soc: number; // percentage 0-100
-  voltage: number; // supercap voltage up to 3.3V
-  powerOutput: number; // in mW from PANI-Modified Bioanode
-  biofilmResistance: number; // in ohms (e.g., 5.5)
-  signalStrength: number; // in dBm
-  aiPrediction: 'LOW' | 'MEDIUM' | 'HIGH';
+  waterLevel: number;    // cm — JSN-SR04T ultrasonic sensor reading
+  soc: number;           // % — supercapacitor State of Charge
+  voltage: number;       // V — BMFC open-circuit voltage (max 3.3V)
+  powerOutput: number;   // mW — PANI-modified bioanode output
+  biofilmResistance: number; // Ω — EIS-measured internal resistance
+  signalStrength: number;    // dBm — LoRaWAN RSSI
+  aiPrediction: 'LOW' | 'MEDIUM' | 'HIGH'; // MLP model risk level
   lastSync: string;
-  dutyCycle: string; // e.g. '30m', '15m', '2m'
+  dutyCycle: string; // adaptive LoRaWAN duty cycle: '30m', '15m', '2m'
 }
 
 export interface Alert {
@@ -31,10 +33,11 @@ export interface Alert {
 
 export interface WaterLevelHistory {
   nodeId: string;
-  labels: string[];
+  labels: string[];        // time labels (most recent first, reversed for chart)
   datasets: { data: number[] }[];
 }
 
+// ─── Mock Nodes (4 BMFC stations on Naga City estero network) ─────────────────
 export const MOCK_NODES: Node[] = [
   {
     id: 'node-03',
@@ -102,12 +105,13 @@ export const MOCK_NODES: Node[] = [
   },
 ];
 
+// ─── Mock Alerts (pre-seeded, TelemetryContext adds new ones dynamically) ─────
 export const MOCK_ALERTS: Alert[] = [
   {
     id: 'a1',
     type: 'critical',
     title: 'CRITICAL — Node #12',
-    message: 'Water level at 127cm — EXCEEDED 120cm THRESHOLD. Adaptive duty cycle shifted to 2m bursts. MLP model confidence: 96.8%.',
+    message: 'Water level at 127cm — EXCEEDED 120cm THRESHOLD. Adaptive duty cycle shifted to 2m bursts. Edge-AI MLP confidence: 96.8%. Immediate CDRRMO action required.',
     timestamp: '2:34 PM',
     nodeId: 'node-12',
     stationName: 'Mabolo Outfall',
@@ -118,7 +122,7 @@ export const MOCK_ALERTS: Alert[] = [
     id: 'a2',
     type: 'warning',
     title: 'WARNING — Node #05',
-    message: 'Rising trend detected (+15cm/hr). LSTM model predicts HIGH risk in 3 hours. Standby pumping at Triangulo Drain.',
+    message: 'Rising trend detected (+15cm/hr). MLP model (MAE 4.2cm, R²=0.91) predicts HIGH risk in ~3 hours. Standby pumping at Triangulo Drain recommended.',
     timestamp: '1:15 PM',
     nodeId: 'node-05',
     stationName: 'Triangulo Drain',
@@ -129,7 +133,7 @@ export const MOCK_ALERTS: Alert[] = [
     id: 'a3',
     type: 'info',
     title: 'INFO — Node #03',
-    message: 'Supercapacitor bank fully recharged in 7.8 seconds. BMFC bioanode outputting 3.2mW at 3.25V.',
+    message: 'Supercapacitor bank recharged in 7.8s via BQ25504 MPPT IC. BMFC bioanode at peak output: 3.2mW, 3.25V. BOD reduction: 78% vs baseline.',
     timestamp: '12:00 PM',
     nodeId: 'node-03',
     stationName: 'Sabang Estero',
@@ -138,31 +142,28 @@ export const MOCK_ALERTS: Alert[] = [
   },
 ];
 
+// ─── Static 24h seed history (TelemetryContext replaces with live data) ───────
 export const MOCK_CHART_DATA: WaterLevelHistory = {
   nodeId: 'node-07',
-  labels: ['0h', '-4h', '-8h', '-12h', '-16h', '-20h', '-24h'],
-  datasets: [
-    {
-      data: [67, 65, 60, 55, 58, 62, 65],
-    },
-  ],
+  labels: ['24h', '20h', '16h', '12h', '8h', '4h', 'Now'],
+  datasets: [{ data: [65, 62, 58, 55, 60, 64, 67] }],
 };
 
 export const NODE_CHART_DATA_MAP: Record<string, WaterLevelHistory> = {
   'node-07': MOCK_CHART_DATA,
   'node-03': {
     nodeId: 'node-03',
-    labels: ['0h', '-4h', '-8h', '-12h', '-16h', '-20h', '-24h'],
-    datasets: [{ data: [45, 43, 44, 42, 40, 41, 43] }],
+    labels: ['24h', '20h', '16h', '12h', '8h', '4h', 'Now'],
+    datasets: [{ data: [43, 41, 40, 42, 44, 43, 45] }],
   },
   'node-05': {
     nodeId: 'node-05',
-    labels: ['0h', '-4h', '-8h', '-12h', '-16h', '-20h', '-24h'],
-    datasets: [{ data: [95, 90, 82, 75, 68, 65, 62] }],
+    labels: ['24h', '20h', '16h', '12h', '8h', '4h', 'Now'],
+    datasets: [{ data: [62, 65, 68, 75, 82, 90, 95] }],
   },
   'node-12': {
     nodeId: 'node-12',
-    labels: ['0h', '-4h', '-8h', '-12h', '-16h', '-20h', '-24h'],
-    datasets: [{ data: [127, 122, 115, 108, 98, 85, 78] }],
+    labels: ['24h', '20h', '16h', '12h', '8h', '4h', 'Now'],
+    datasets: [{ data: [78, 85, 98, 108, 115, 122, 127] }],
   },
 };

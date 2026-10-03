@@ -21,6 +21,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "29fa670d-ad21-46bd-8f78-700240868ddd"
+      }
+    },
+    "owner": "venstqs",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/29fa670d-ad21-46bd-8f78-700240868ddd"
     }
   }
 }

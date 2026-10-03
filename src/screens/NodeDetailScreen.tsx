@@ -43,7 +43,7 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
 }) => {
   const nodeId = route?.params?.nodeId || 'node-07';
 
-  const { getNodeById, dispatchSiren } = useTelemetry();
+  const { getNodeById, dispatchSiren, nodeHistories } = useTelemetry();
   const { user } = useAuth();
   const isLGU = user?.persona !== 'CITIZEN';
 
@@ -81,8 +81,11 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
     activeParams.level
   );
 
+  // Use live rolling history from TelemetryContext (updates every 60s)
   const historyData: WaterLevelHistory =
-    NODE_CHART_DATA_MAP[defaultNode.id] || MOCK_CHART_DATA;
+    nodeHistories?.[defaultNode.id] ||
+    NODE_CHART_DATA_MAP[defaultNode.id] ||
+    MOCK_CHART_DATA;
 
   // Responsive Dribbble Chart Width
   const chartWidth = Math.min(Dimensions.get('window').width - 48, 330);
@@ -262,12 +265,35 @@ export const NodeDetailScreen: React.FC<NodeDetailScreenProps> = ({
               </View>
               <View>
                 <Text style={styles.aiTitle}>On-Device Edge-AI Inference</Text>
-                <Text style={styles.aiSubtitle}>2-Layer LSTM (50 neurons) | ESP32</Text>
+                <Text style={styles.aiSubtitle}>MLP (50→50→25 ReLU) | ESP32-S3 | 85KB INT8</Text>
               </View>
             </View>
             <Text style={styles.confidenceScore}>{liveInference.confidence}% Conf.</Text>
           </View>
-          
+
+          {/* Benchmark Metrics Row */}
+          <View style={styles.metricsTableRow}>
+            <View style={styles.metricCell}>
+              <Text style={styles.metricCellValue}>MAE {liveInference.mae}cm</Text>
+              <Text style={styles.metricCellLabel}>Mean Abs Error</Text>
+            </View>
+            <View style={styles.metricCellDivider} />
+            <View style={styles.metricCell}>
+              <Text style={styles.metricCellValue}>RMSE {liveInference.rmse}cm</Text>
+              <Text style={styles.metricCellLabel}>Root Mean Sq Err</Text>
+            </View>
+            <View style={styles.metricCellDivider} />
+            <View style={styles.metricCell}>
+              <Text style={styles.metricCellValue}>R² {liveInference.r2}</Text>
+              <Text style={styles.metricCellLabel}>Fit Score</Text>
+            </View>
+            <View style={styles.metricCellDivider} />
+            <View style={styles.metricCell}>
+              <Text style={styles.metricCellValue}>&lt;{liveInference.inferenceMsMax}ms</Text>
+              <Text style={styles.metricCellLabel}>ESP32 Infer</Text>
+            </View>
+          </View>
+
           <Text style={styles.aiRecommendation}>{liveInference.recommendation}</Text>
           
           <View style={styles.scenarioButtonGroup}>
@@ -701,5 +727,37 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     marginLeft: 6,
+  },
+  // Edge-AI benchmark metrics row
+  metricsTableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  metricCell: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  metricCellValue: {
+    color: '#34D399',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  metricCellLabel: {
+    color: '#64748B',
+    fontSize: 8,
+    fontWeight: '600',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  metricCellDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#334155',
   },
 });
